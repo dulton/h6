@@ -1,6 +1,16 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "obj.h"
+
+#define BUG_ON(x) \
+do {\
+	if (x) \
+	{\
+		fprintf(stderr, "BUG_ON(%s) at file:%s line:%d function:%s!\n", #x, __FILE__, __LINE__, __FUNCTION__); \
+		char *_______________________p = 0; *_______________________p = 0; \
+	}\
+} while (0)
 
 obj_t*
 obj_new(uint32_t size, obj_fin fin, uint8_t *name)
@@ -22,13 +32,15 @@ obj_new(uint32_t size, obj_fin fin, uint8_t *name)
 		p->name[len] = '\0';
         
         p->size = size;
-        p->fin = fin;        
+        p->fin = fin;
+
+        atomic_set(&p->ref_count, 1);
 	}
     
 	return p;    
 }
 
-void
+static __inline__ void
 obj_free(obj_t *p)
 {
 	if (p->fin)
@@ -37,4 +49,24 @@ obj_free(obj_t *p)
 	}
     
     free(p);
+}
+
+void obj_ref(void *_p)
+{
+	obj_t *p = (obj_t*)_p;
+	BUG_ON(atomic_get(&p->ref_count) <= 0);
+
+	atomic_inc(&p->ref_count);
+}
+
+
+void obj_unref(void *_p)
+{
+	obj_t *p = (obj_t*)_p;
+	BUG_ON(atomic_get(&p->ref_count) <= 0);
+
+	if (atomic_dec_and_test_zero(&p->ref_count))
+	{
+		obj_free(p);
+	}
 }

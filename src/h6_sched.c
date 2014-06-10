@@ -121,7 +121,7 @@ h6_sched_free(h6_scher_t *sched)
         pthread_join(*(sched->loops[idx].loop_thread), &result);
         free(sched->loops[idx].loop_thread);
         
-        h6_ev_loop_free(sched->loops[idx].loop);
+        h6_ev_loop_unref(sched->loops[idx].loop);
     }
     free(sched->loops);
     

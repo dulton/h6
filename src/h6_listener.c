@@ -92,6 +92,14 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 	h6_ev_t *ev;
 	int32_t sock;
 
+	lt = (h6_listener_t*)l;
+
+    if (lt->sock != -1)
+    {
+        TRACE_ERROR("listener has been set port already, port = %u\r\n", lt->port);
+        return -1;
+    }
+    
 	sock = unix_sock_bind(L4_TCP, 0, htons(port), FORCE_BIND);
 	if (sock < 0)
 	{
@@ -112,7 +120,6 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 
 	unix_sock_set_flags(sock, O_NONBLOCK);
 
-	lt = (h6_listener_t*)l;
     
 	lt->port = port;
 	lt->host = 0;
@@ -169,3 +176,5 @@ alloc_h6_listener(h6_listener_ops *ops)
 {
     return listener_alloc(sizeof(h6_listener_t), &l_ops, ops);
 }
+
+

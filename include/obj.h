@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include "atomic.h"
 
 #define NAME_SIZE		32			
 
@@ -17,20 +18,13 @@ struct __obj
 {
 	uint8_t		name[NAME_SIZE];
 	uint32_t	size;
+    atomic_t	ref_count;
 	obj_fin		fin;
 };
 
 obj_t*  obj_new(uint32_t size, obj_fin fin, uint8_t *name);
-void    obj_free(obj_t *p);
-
-#define BUG_ON(x) \
-do {\
-	if (x) \
-	{\
-		fprintf(stderr, "BUG_ON(%s) at file:%s line:%d function:%s!\n", #x, __FILE__, __LINE__, __FUNCTION__); \
-		char *_______________________p = 0; *_______________________p = 0; \
-	}\
-} while (0)
+void    obj_ref(void *p);
+void    obj_unref(void *p);
 
 #ifdef __cplusplus
 }

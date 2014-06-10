@@ -1,6 +1,7 @@
 #ifndef __CLIENT_H__
 #define __CLIENT_H__
 
+#include <stdint.h>
 #include <pthread.h>
 #include "obj.h"
 #include "list.h"
@@ -31,8 +32,11 @@ struct __client_ops
 };
 
 client_t *client_alloc(uint32_t size, client_ops *ops, void *u, uint8_t *name);
-void client_kill(client_t *c);
+client_t *client_ref(client_t *c);
+void client_unref(client_t *c);
+void client_kill_unref(client_t *c);
 int32_t client_attach(client_t *c, void *sched);
+
 
 #ifdef __cplusplus
 }

@@ -40,11 +40,21 @@ do {\
 	}\
 } while (0)
 
+#ifndef REF_DEBUG_TEST
+#define MAX_REF_COUNT_VALUE (10000)	/* Maybe enough */
+#define REF_DEBUG_TEST(pobj)	\
+    do {\
+        assert((pobj) && atomic_get(&(pobj)->ref_count) > 0); \
+        assert(atomic_get(&(pobj)->ref_count) < MAX_REF_COUNT_VALUE); \
+    } while (0)
+#endif
+
+
+
 typedef struct _h6_ev_loop_ops h6_ev_loop_ops;
 typedef void (*loop_ops_func)(h6_ev_loop *loop, h6_ev_loop_ops *ops);
 
 typedef enum _loop_ops_type ops_type_t;
-
 enum _loop_ops_type
 {
     unknown_ops_type = 0,
@@ -68,6 +78,8 @@ struct wakeup_block		/* for loop waking up */
 
 struct _h6_ev_loop_t
 {
+    atomic_t        ref_count;
+
 	struct ev_loop  *ev_loop;
 	int32_t         loop_running;
 	int32_t         loop_quited;
@@ -145,10 +157,37 @@ h6_ev_block_woken_up(struct wakeup_block *wb)
 
 //-------------------------------------------------------------------
 
+static __inline__ void
+h6_ev_loop_free(h6_ev_loop *loop)
+{
+    // to do ...check
+    if (loop == NULL)
+        return;
+    
+    if (loop->ev_loop)
+        ev_loop_destroy(loop->ev_loop);
+    
+    if (loop->lock)
+    {
+        pthread_mutex_destroy(loop->lock);
+        free(loop->lock);
+    }
+    
+    if (loop->operations)
+        queue_free(loop->operations);   
+    
+    if (loop->ev_list)
+        list_free(loop->ev_list);
+        
+    free(loop);
+}
+
 static __inline__ int32_t
 h6_ev_loop_init(h6_ev_loop *loop)
 {
-	loop->ev_loop = ev_loop_new(EVFLAG_AUTO);
+    atomic_set(&loop->ref_count, 1);
+
+	loop->ev_loop = h6_ev_loop_new(EVFLAG_AUTO);
 	if (loop->ev_loop == NULL)
         return -1;
 
@@ -195,30 +234,29 @@ h6_ev_loop_new(void)
 	return loop;
 }
 
-void
-h6_ev_loop_free(h6_ev_loop *loop)
+h6_ev_loop *
+h6_ev_loop_ref(h6_ev_loop *loop)
 {
-    // to do ...check
-    if (loop == NULL)
-        return;
+    REF_DEBUG_TEST(loop);
+    atomic_inc(&loop->ref_count);
     
-    if (loop->ev_loop)
-        ev_loop_destroy(loop->ev_loop);
-    
-    if (loop->lock)
-    {
-        pthread_mutex_destroy(loop->lock);
-        free(loop->lock);
-    }
-    
-    if (loop->operations)
-        queue_free(loop->operations);   
-    
-    if (loop->ev_list)
-        list_free(loop->ev_list);
-        
-    free(loop);
+	return loop;
 }
+
+
+
+void
+h6_ev_loop_unref(h6_ev_loop *loop)
+{
+	REF_DEBUG_TEST(loop);
+	if (atomic_dec_and_test_zero(&loop->ref_count))
+	{
+		h6_ev_loop_free(loop);
+	}
+
+}
+
+
 
 void
 h6_ev_loop_run(h6_ev_loop *loop)
@@ -548,7 +586,8 @@ h6_ev_new(size_t size, int fd, int events)
 
 	ev = (h6_ev_t *)malloc(size);
 	memset(ev, 0, size);
-	
+
+    atomic_set(&ev->ref_count, 1);
 	ev->ev_size = size;
 
 	events &= ( EV_READ | EV_WRITE );
@@ -562,6 +601,26 @@ h6_ev_new(size_t size, int fd, int events)
 
 	return ev;
 }
+
+h6_ev_t *h6_ev_ref(h6_ev_t *event)
+{
+	REF_DEBUG_TEST(event);
+	atomic_inc(&event->ref_count);
+	return event;
+}
+
+
+void h6_ev_unref(h6_ev_t *event)
+{
+	REF_DEBUG_TEST(event);
+	if (atomic_dec_and_test_zero(&event->ref_count))
+	{
+		if (event->destroy)
+			(*event->destroy)(event);
+		free(event);
+	}
+}
+
 
 void
 h6_ev_set_callback(h6_ev_t *event, h6_ev_dispath dispath,

@@ -39,7 +39,7 @@ listener_alloc(uint32_t size, listener_ops *ops, void *u)
 		if (err)
 		{
 			listener_finalize(l);
-			obj_free((obj_t *)l);
+			obj_unref((obj_t *)l);
 			return NULL;
 		}
 	}

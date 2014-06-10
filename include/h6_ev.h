@@ -3,6 +3,7 @@
 
 #include <ev.h>
 #include "h6_def.h"
+#include "atomic.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,21 +18,22 @@ typedef struct _h6_ev_loop_t h6_ev_loop;
 
 struct _h6_ev
 {
-	size_t  ev_size;		/* for memory releasing */
+    atomic_t    ref_count;
+	size_t      ev_size;		/* for memory releasing */
 	
-    int     ev_fd;
-	struct  ev_io io;
+    int         ev_fd;
+	struct      ev_io io;
 
-	int     timeout;	    /* milli-secs */    
-	struct  ev_timer timer;
+	int         timeout;	    /* milli-secs */    
+	struct      ev_timer timer;
 
-	int     events;
-	int     flags;		    /* internal flags, identify whether h6_ev_t
+	int         events;
+	int         flags;		    /* internal flags, identify whether h6_ev_t
                              * had been added into loop
                              */
-	void    *user_data;
+	void        *user_data;
 
-    h6_ev_opt    *opt;
+    h6_ev_opt   *opt;
 };
 
 typedef h6_bool_t (*h6_ev_dispath)(h6_ev_t *ev, int revents, void *user_data);
@@ -45,15 +47,17 @@ struct _h6_ev_opt_t
 };
 
 h6_ev_loop *h6_ev_loop_new( void );
+h6_ev_loop *h6_ev_loop_ref(h6_ev_loop *loop);
+void h6_ev_loop_unref(h6_ev_loop *loop);
 void h6_ev_loop_run(h6_ev_loop *loop);
 void h6_ev_loop_quit(h6_ev_loop *loop);
 h6_bool_t h6_ev_loop_attach(h6_ev_loop *loop, h6_ev_t *event);
 void h6_ev_loop_remove(h6_ev_loop* loop, h6_ev_t *event);	/* remove from it's loop */
-void h6_ev_loop_free(h6_ev_loop *loop);
 
 
 h6_ev_t *h6_ev_new(size_t size, int fd, int events);
-
+h6_ev_t *h6_ev_ref(h6_ev_t *event);
+void h6_ev_unref(h6_ev_t *event);
 void h6_ev_set_callback(h6_ev_t *event, h6_ev_dispath dispath,
     void *user_data, h6_ev_ondestroy notify);
     
