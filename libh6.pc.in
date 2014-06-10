@@ -1,0 +1,14 @@
+# autoconfSamp pkg-config source file
+#
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include/h6
+
+Name: h5
+Description: libh6 is a proxy agent library, Copyright (c) Shiyong Zhang(shiyong.zhang.cn@gmail.com),  2014. 
+
+Version: 1.0.0
+Requires:
+Libs: -L${exec_prefix}/lib -lh6
+Cflags: -I${includedir}
