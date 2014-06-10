@@ -3,6 +3,7 @@
 #include "h6_listener.h"
 #include "h6_server.h"
 #include "h6_def.h"
+#include "trace.h"
 
 static h6_bool_t
 h6_listener_on_event(h6_ev_t *ev, int revents, void *user_data)
@@ -37,8 +38,14 @@ h6_listener_on_event(h6_ev_t *ev, int revents, void *user_data)
 		);
 
 		server = (h6_server *)listener_get_owner((listener_t *)lt);
+		client_set_add(&server->cs, cli);
+
+		TRACE_TRACE(
+			"Add new client, sock:'%d'.", sock
+		);
 
 		client_attach(cli, server->sched);
+
 		TRACE_TRACE("Generate attached client, sock:'%d'", sock);
 	}
 	
@@ -176,5 +183,3 @@ alloc_h6_listener(h6_listener_ops *ops)
 {
     return listener_alloc(sizeof(h6_listener_t), &l_ops, ops);
 }
-
-
