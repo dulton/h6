@@ -12,4 +12,7 @@ typedef enum
     H6_TRUE
 } h6_bool_t;
 
+#define container_of(ptr, struct_type, member) \
+	(struct_type*)(((char*)(ptr)) - __offsetof__(struct_type, member))
+	
 #endif

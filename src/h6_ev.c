@@ -19,9 +19,6 @@
 	# define __offsetof__(struct_type, member)	\
 		((long)(unsigned char*)&((struct_type*)0)->member)
 #endif
-
-#define container_of(ptr, struct_type, member) \
-	(struct_type*)(((char*)(ptr)) - __offsetof__(struct_type, member))
     
 #if defined (__GNUC__) && __GNUC__ > 2 /* since 2.9 */
 	# define H6_LIKELY(expr) (__builtin_expect(!!(expr), 1))
