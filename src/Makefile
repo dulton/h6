@@ -84,7 +84,10 @@ libh6_a_DEPENDENCIES =
 am_libh6_a_OBJECTS = libh6_a-client.$(OBJEXT) libh6_a-obj.$(OBJEXT) \
 	libh6_a-listener.$(OBJEXT) libh6_a-queue.$(OBJEXT) \
 	libh6_a-unix_sock.$(OBJEXT) libh6_a-trace.$(OBJEXT) \
-	libh6_a-client_set.$(OBJEXT) libh6_a-h6_ev.$(OBJEXT) \
+	libh6_a-client_set.$(OBJEXT) libh6_a-mem_block.$(OBJEXT) \
+	libh6_a-msg.$(OBJEXT) libh6_a-network_client.$(OBJEXT) \
+	libh6_a-proto_parser.$(OBJEXT) libh6_a-proto_watch.$(OBJEXT) \
+	libh6_a-trace.$(OBJEXT) libh6_a-h6_ev.$(OBJEXT) \
 	libh6_a-h6_sched.$(OBJEXT) libh6_a-h6_server.$(OBJEXT) \
 	libh6_a-h6_relay_set.$(OBJEXT) libh6_a-h6_listener.$(OBJEXT)
 libh6_a_OBJECTS = $(am_libh6_a_OBJECTS)
@@ -107,12 +110,12 @@ HEADERS = $(libh6include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/shiyong/h6/trunk/missing --run aclocal-1.11
+ACLOCAL = ${SHELL} /home/shiyong/h6-trunk.svn/missing --run aclocal-1.11
 AMTAR = $${TAR-tar}
 AR = ar
-AUTOCONF = ${SHELL} /home/shiyong/h6/trunk/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/shiyong/h6/trunk/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/shiyong/h6/trunk/missing --run automake-1.11
+AUTOCONF = ${SHELL} /home/shiyong/h6-trunk.svn/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/shiyong/h6-trunk.svn/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/shiyong/h6-trunk.svn/missing --run automake-1.11
 AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -149,7 +152,7 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/shiyong/h6/trunk/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/shiyong/h6-trunk.svn/missing --run makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /bin/mkdir -p
 NM = /usr/bin/nm -B
@@ -175,10 +178,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = strip
 VERSION = 1.0.0
-abs_builddir = /home/shiyong/h6/trunk/src
-abs_srcdir = /home/shiyong/h6/trunk/src
-abs_top_builddir = /home/shiyong/h6/trunk
-abs_top_srcdir = /home/shiyong/h6/trunk
+abs_builddir = /home/shiyong/h6-trunk.svn/src
+abs_srcdir = /home/shiyong/h6-trunk.svn/src
+abs_top_builddir = /home/shiyong/h6-trunk.svn
+abs_top_srcdir = /home/shiyong/h6-trunk.svn
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
@@ -208,7 +211,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/shiyong/h6/trunk/install-sh
+install_sh = ${SHELL} /home/shiyong/h6-trunk.svn/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -231,7 +234,8 @@ top_srcdir = ..
 AUTOMAKE_OPTIONS = foreign
 lib_LIBRARIES = libh6.a
 libh6_a_SOURCES = client.c obj.c listener.c queue.c unix_sock.c trace.c client_set.c \
-                h6_ev.c h6_sched.c h6_server.c h6_relay_set.c h6_listener.c
+                mem_block.c msg.c network_client.c proto_parser.c proto_watch.c trace.c \
+                h6_ev.c h6_sched.c h6_server.c h6_relay_set.c h6_listener.c 
 
 libh6_a_LIBADD = 
 libh6_a_LIBFLAGS = -shared
@@ -322,7 +326,12 @@ include ./$(DEPDIR)/libh6_a-h6_relay_set.Po
 include ./$(DEPDIR)/libh6_a-h6_sched.Po
 include ./$(DEPDIR)/libh6_a-h6_server.Po
 include ./$(DEPDIR)/libh6_a-listener.Po
+include ./$(DEPDIR)/libh6_a-mem_block.Po
+include ./$(DEPDIR)/libh6_a-msg.Po
+include ./$(DEPDIR)/libh6_a-network_client.Po
 include ./$(DEPDIR)/libh6_a-obj.Po
+include ./$(DEPDIR)/libh6_a-proto_parser.Po
+include ./$(DEPDIR)/libh6_a-proto_watch.Po
 include ./$(DEPDIR)/libh6_a-queue.Po
 include ./$(DEPDIR)/libh6_a-trace.Po
 include ./$(DEPDIR)/libh6_a-unix_sock.Po
@@ -445,6 +454,76 @@ libh6_a-client_set.obj: client_set.c
 #	source='client_set.c' object='libh6_a-client_set.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -c -o libh6_a-client_set.obj `if test -f 'client_set.c'; then $(CYGPATH_W) 'client_set.c'; else $(CYGPATH_W) '$(srcdir)/client_set.c'; fi`
+
+libh6_a-mem_block.o: mem_block.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -MT libh6_a-mem_block.o -MD -MP -MF $(DEPDIR)/libh6_a-mem_block.Tpo -c -o libh6_a-mem_block.o `test -f 'mem_block.c' || echo '$(srcdir)/'`mem_block.c
+	$(am__mv) $(DEPDIR)/libh6_a-mem_block.Tpo $(DEPDIR)/libh6_a-mem_block.Po
+#	source='mem_block.c' object='libh6_a-mem_block.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -c -o libh6_a-mem_block.o `test -f 'mem_block.c' || echo '$(srcdir)/'`mem_block.c
+
+libh6_a-mem_block.obj: mem_block.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -MT libh6_a-mem_block.obj -MD -MP -MF $(DEPDIR)/libh6_a-mem_block.Tpo -c -o libh6_a-mem_block.obj `if test -f 'mem_block.c'; then $(CYGPATH_W) 'mem_block.c'; else $(CYGPATH_W) '$(srcdir)/mem_block.c'; fi`
+	$(am__mv) $(DEPDIR)/libh6_a-mem_block.Tpo $(DEPDIR)/libh6_a-mem_block.Po
+#	source='mem_block.c' object='libh6_a-mem_block.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -c -o libh6_a-mem_block.obj `if test -f 'mem_block.c'; then $(CYGPATH_W) 'mem_block.c'; else $(CYGPATH_W) '$(srcdir)/mem_block.c'; fi`
+
+libh6_a-msg.o: msg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -MT libh6_a-msg.o -MD -MP -MF $(DEPDIR)/libh6_a-msg.Tpo -c -o libh6_a-msg.o `test -f 'msg.c' || echo '$(srcdir)/'`msg.c
+	$(am__mv) $(DEPDIR)/libh6_a-msg.Tpo $(DEPDIR)/libh6_a-msg.Po
+#	source='msg.c' object='libh6_a-msg.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -c -o libh6_a-msg.o `test -f 'msg.c' || echo '$(srcdir)/'`msg.c
+
+libh6_a-msg.obj: msg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -MT libh6_a-msg.obj -MD -MP -MF $(DEPDIR)/libh6_a-msg.Tpo -c -o libh6_a-msg.obj `if test -f 'msg.c'; then $(CYGPATH_W) 'msg.c'; else $(CYGPATH_W) '$(srcdir)/msg.c'; fi`
+	$(am__mv) $(DEPDIR)/libh6_a-msg.Tpo $(DEPDIR)/libh6_a-msg.Po
+#	source='msg.c' object='libh6_a-msg.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -c -o libh6_a-msg.obj `if test -f 'msg.c'; then $(CYGPATH_W) 'msg.c'; else $(CYGPATH_W) '$(srcdir)/msg.c'; fi`
+
+libh6_a-network_client.o: network_client.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -MT libh6_a-network_client.o -MD -MP -MF $(DEPDIR)/libh6_a-network_client.Tpo -c -o libh6_a-network_client.o `test -f 'network_client.c' || echo '$(srcdir)/'`network_client.c
+	$(am__mv) $(DEPDIR)/libh6_a-network_client.Tpo $(DEPDIR)/libh6_a-network_client.Po
+#	source='network_client.c' object='libh6_a-network_client.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -c -o libh6_a-network_client.o `test -f 'network_client.c' || echo '$(srcdir)/'`network_client.c
+
+libh6_a-network_client.obj: network_client.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -MT libh6_a-network_client.obj -MD -MP -MF $(DEPDIR)/libh6_a-network_client.Tpo -c -o libh6_a-network_client.obj `if test -f 'network_client.c'; then $(CYGPATH_W) 'network_client.c'; else $(CYGPATH_W) '$(srcdir)/network_client.c'; fi`
+	$(am__mv) $(DEPDIR)/libh6_a-network_client.Tpo $(DEPDIR)/libh6_a-network_client.Po
+#	source='network_client.c' object='libh6_a-network_client.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -c -o libh6_a-network_client.obj `if test -f 'network_client.c'; then $(CYGPATH_W) 'network_client.c'; else $(CYGPATH_W) '$(srcdir)/network_client.c'; fi`
+
+libh6_a-proto_parser.o: proto_parser.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -MT libh6_a-proto_parser.o -MD -MP -MF $(DEPDIR)/libh6_a-proto_parser.Tpo -c -o libh6_a-proto_parser.o `test -f 'proto_parser.c' || echo '$(srcdir)/'`proto_parser.c
+	$(am__mv) $(DEPDIR)/libh6_a-proto_parser.Tpo $(DEPDIR)/libh6_a-proto_parser.Po
+#	source='proto_parser.c' object='libh6_a-proto_parser.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -c -o libh6_a-proto_parser.o `test -f 'proto_parser.c' || echo '$(srcdir)/'`proto_parser.c
+
+libh6_a-proto_parser.obj: proto_parser.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -MT libh6_a-proto_parser.obj -MD -MP -MF $(DEPDIR)/libh6_a-proto_parser.Tpo -c -o libh6_a-proto_parser.obj `if test -f 'proto_parser.c'; then $(CYGPATH_W) 'proto_parser.c'; else $(CYGPATH_W) '$(srcdir)/proto_parser.c'; fi`
+	$(am__mv) $(DEPDIR)/libh6_a-proto_parser.Tpo $(DEPDIR)/libh6_a-proto_parser.Po
+#	source='proto_parser.c' object='libh6_a-proto_parser.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -c -o libh6_a-proto_parser.obj `if test -f 'proto_parser.c'; then $(CYGPATH_W) 'proto_parser.c'; else $(CYGPATH_W) '$(srcdir)/proto_parser.c'; fi`
+
+libh6_a-proto_watch.o: proto_watch.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -MT libh6_a-proto_watch.o -MD -MP -MF $(DEPDIR)/libh6_a-proto_watch.Tpo -c -o libh6_a-proto_watch.o `test -f 'proto_watch.c' || echo '$(srcdir)/'`proto_watch.c
+	$(am__mv) $(DEPDIR)/libh6_a-proto_watch.Tpo $(DEPDIR)/libh6_a-proto_watch.Po
+#	source='proto_watch.c' object='libh6_a-proto_watch.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -c -o libh6_a-proto_watch.o `test -f 'proto_watch.c' || echo '$(srcdir)/'`proto_watch.c
+
+libh6_a-proto_watch.obj: proto_watch.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -MT libh6_a-proto_watch.obj -MD -MP -MF $(DEPDIR)/libh6_a-proto_watch.Tpo -c -o libh6_a-proto_watch.obj `if test -f 'proto_watch.c'; then $(CYGPATH_W) 'proto_watch.c'; else $(CYGPATH_W) '$(srcdir)/proto_watch.c'; fi`
+	$(am__mv) $(DEPDIR)/libh6_a-proto_watch.Tpo $(DEPDIR)/libh6_a-proto_watch.Po
+#	source='proto_watch.c' object='libh6_a-proto_watch.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -c -o libh6_a-proto_watch.obj `if test -f 'proto_watch.c'; then $(CYGPATH_W) 'proto_watch.c'; else $(CYGPATH_W) '$(srcdir)/proto_watch.c'; fi`
 
 libh6_a-h6_ev.o: h6_ev.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libh6_a_CFLAGS) $(CFLAGS) -MT libh6_a-h6_ev.o -MD -MP -MF $(DEPDIR)/libh6_a-h6_ev.Tpo -c -o libh6_a-h6_ev.o `test -f 'h6_ev.c' || echo '$(srcdir)/'`h6_ev.c

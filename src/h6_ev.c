@@ -5,20 +5,10 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "queue.h"
+#include "h6_def.h"
 #include "h6_ev.h"
 
 #define FLAGS_EVENT_IN_LOOP 0x01
-
-#if defined (__GNUC__) && __GNUC__ >= 4
-	# define __ATTR_WARN_UNUSED_RETSULT__ \
-		__attribute__((warn_unused_result))
-	# define __offsetof__(struct_type, member)	\
-		((long)(offsetof(struct_type, member)))
-#else
-	# define __ATTR_WARN_UNUSED_RETSULT__
-	# define __offsetof__(struct_type, member)	\
-		((long)(unsigned char*)&((struct_type*)0)->member)
-#endif
     
 #if defined (__GNUC__) && __GNUC__ > 2 /* since 2.9 */
 	# define H6_LIKELY(expr) (__builtin_expect(!!(expr), 1))

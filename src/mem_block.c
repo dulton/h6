@@ -1,6 +1,8 @@
 #include <pthread.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mem_block.h"
+#include "h6_def.h"
 
 #define MAX_CACHE_COUNT             128
 #define MAX_GATHER_MEM              65536

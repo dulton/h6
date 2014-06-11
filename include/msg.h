@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define MT_MASK  0x03
+
 typedef enum
 {
 	MT_01 = 0x01,
@@ -21,7 +23,7 @@ typedef struct __msg_ops msg_ops;
 
 struct __msg
 {
-	obj_t       __super;
+    obj_t       __super;
     msg_type_t  type;
 };
 
@@ -29,7 +31,7 @@ struct __msg_ops
 {
 	msg_t *(*dup)(msg_t *m);
 	uint32_t (*msg_size)(msg_t *m);
-	mem_block *(*msg_to_mb)(msg_t *m);
+	mb_t *(*msg_to_mb)(msg_t *m);
 };
 
 int32_t register_msg_type(msg_type_t mt, msg_ops *ops); 
@@ -40,7 +42,7 @@ void msg_unref(msg_t *m);
 msg_t *msg_dup(msg_t  *m);
 uint32_t msg_size(msg_t *m);
 
-mem_block *msg_to_mb(msg_t *m);	//@{get msg_t data, and unref msg_t}
+mb_t *msg_to_mb(msg_t *m);	//@{get msg_t data, and unref msg_t}
 
 
 #ifdef __cplusplus

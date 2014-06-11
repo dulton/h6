@@ -14,5 +14,16 @@ typedef enum
 
 #define container_of(ptr, struct_type, member) \
 	(struct_type*)(((char*)(ptr)) - __offsetof__(struct_type, member))
+
+#if defined (__GNUC__) && __GNUC__ >= 4
+        # define __ATTR_WARN_UNUSED_RETSULT__ \
+__attribute__((warn_unused_result))
+# define __offsetof__(struct_type, member)      \
+  ((long)(offsetof(struct_type, member)))
+#else
+        # define __ATTR_WARN_UNUSED_RETSULT__
+# define __offsetof__(struct_type, member)      \
+  ((long)(unsigned char*)&((struct_type*)0)->member)
+#endif
 	
 #endif
