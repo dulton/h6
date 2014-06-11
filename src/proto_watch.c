@@ -1,3 +1,5 @@
+#include <assert.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -135,7 +137,7 @@ __proto_watch_write_pending(proto_watch *w)
 			return err;
 		}
 
-		BUG_ON(w->write_buffer->offset != w->write_buffer->size);
+		assert(w->write_buffer->offset == w->write_buffer->size);
 		free_memblock(w->write_buffer);
 		w->write_buffer = NULL;
 	}
@@ -389,11 +391,11 @@ proto_watch_new(void *io, int32_t timeout, proto_watch_ops *ops, void *u,
 	INIT_LIST_HEAD(&pw->backlog_list);
 	pw->backlog_size = 0;
 
-    pw->lock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-    pthread_mutex_init(pw->lock, NULL);
+        pw->lock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+        pthread_mutex_init(pw->lock, NULL);
 
 	pw->ops = ops;
-	BUG_ON(unix_sock_set_flags(pw->watch_fd, O_NONBLOCK));
+	assert(!unix_sock_set_flags(pw->watch_fd, O_NONBLOCK));
 
 	h6_ev_set_callback(ev, proto_watch_dispath, u,
 		proto_watch_on_finalize);

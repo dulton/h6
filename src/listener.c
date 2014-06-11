@@ -30,7 +30,7 @@ listener_alloc(uint32_t size, listener_ops *ops, void *u)
 	if (size < sizeof(*l))
 		return NULL;
 
-	l = (listener_t*)obj_new(size, on_listener_fin, (uint8_t *)__FUNCTION__);
+	l = (listener_t*)obj_new(size, on_listener_fin, __FUNCTION__);
 	l->server = NULL;
 
 	if (ops && ops->init)

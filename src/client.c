@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <errno.h>
 #include "client.h"
 #include "trace.h"
@@ -43,7 +44,7 @@ on_client_fin(obj_t *p)
 }
 
 client_t *
-client_alloc(uint32_t size, client_ops *ops, void *u, uint8_t *name)
+client_alloc(uint32_t size, client_ops *ops, void *u, const char *name)
 {
 	int32_t err;
 	client_t *c;

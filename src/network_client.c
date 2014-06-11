@@ -359,7 +359,7 @@ network_client_new(uint32_t size, network_client_ops *ops,
 	parm.factory = factory;
 
 	return (network_client*)client_alloc(
-		size, &client_ops_impl,&parm, __FUNCTION__);
+		size, &client_ops_impl,&parm,__FUNCTION__);
 }
 
 

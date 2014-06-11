@@ -7,8 +7,9 @@
 #include <netdb.h>
 #include <string.h>
 #include "unix_sock.h"
+#include "h6_def.h"
 
-#define LISTEN_Q				5
+#define LISTEN_Q			5
 #define DNS_BUFFER_LEN			8192
 
 int32_t unix_sock_bind(L4_type l4, uint32_t host,

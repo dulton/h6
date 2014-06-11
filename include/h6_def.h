@@ -30,5 +30,8 @@ __attribute__((warn_unused_result))
 # define __offsetof__(struct_type, member)      \
   ((long)(unsigned char*)&((struct_type*)0)->member)
 #endif
+
+#define __str(p) ((char*)(p))
+
 	
 #endif

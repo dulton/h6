@@ -22,7 +22,7 @@ struct __obj
 	obj_fin		fin;
 };
 
-obj_t*  obj_new(uint32_t size, obj_fin fin, uint8_t *name);
+obj_t*  obj_new(uint32_t size, obj_fin fin, const char *name);
 void    obj_ref(void *p);
 void    obj_unref(void *p);
 

@@ -13,10 +13,10 @@ do {\
 } while (0)
 
 obj_t*
-obj_new(uint32_t size, obj_fin fin, uint8_t *name)
+obj_new(uint32_t size, obj_fin fin, const char *name)
 {
 	obj_t *p;
-    size_t len;
+	size_t len;
     
 	if (size < sizeof(*p))
 		return NULL;

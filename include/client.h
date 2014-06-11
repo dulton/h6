@@ -31,7 +31,7 @@ struct __client_ops
 	int32_t (*attach)(client_t *c, void *loop);
 };
 
-client_t *client_alloc(uint32_t size, client_ops *ops, void *u, uint8_t *name);
+client_t *client_alloc(uint32_t size, client_ops *ops, void *u, const char *name);
 client_t *client_ref(client_t *c);
 void client_unref(client_t *c);
 void client_kill_unref(client_t *c);
