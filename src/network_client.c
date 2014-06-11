@@ -1,7 +1,10 @@
+#include <stdlib.h>
+#include <errno.h>
 #include "h6_def.h"
 #include "network_client.h"
 #include "h6_factory.h"
 #include "unix_sock.h"
+#include "trace.h"
 
 #define DEFAULT_TIMEOUT_SEC		60
 #define DEFAULT_CHECK_TIMES		3
@@ -426,8 +429,7 @@ network_client_send_msg(network_client *nc, msg_t *m, uint32_t seq,
 
 
 int32_t
-network_client_send_mb(network_client *nc, mem_block *mb,
-	uint32_t flags)
+network_client_send_mb(network_client *nc, mb_t *mb, uint32_t flags)
 {
 	int32_t err = -EKILLED;
 	proto_watch *pw = NULL;
@@ -452,6 +454,4 @@ network_client_send_mb(network_client *nc, mem_block *mb,
 	return err;
 }
 
-
-//:~ End
 

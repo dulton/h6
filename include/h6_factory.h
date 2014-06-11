@@ -4,6 +4,7 @@
 #include "listener.h"
 #include "client.h"
 #include "proto_parser.h"
+#include "h6_sched.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +22,7 @@ struct __h6_factory
 	void (*destroy_listener)(h6_factory *h6_f, listener_t *l);
 
 	h6_scher_t *(*create_scheduler)(h6_factory *h6_f);
-	void (*destroy_scheduler)(h6_factory *h6_f, JLoopScher *sched);
+	void (*destroy_scheduler)(h6_factory *h6_f, h6_scher_t *sched);
 
 	proto_parser *(*create_client_proto_parser)(h6_factory *h6_f);
 	void (*destroy_client_proto_parser)(h6_factory *h6_f, proto_parser *p);

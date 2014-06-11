@@ -31,7 +31,6 @@ struct __network_client_ops
 	int32_t (*init)(network_client *c);
 	void	(*fin)(network_client *c);
 
-	session *(*create_session)(network_client *c, void *p);
 	int32_t (*msg_recv)(network_client *c, msg_t *m);
 	int32_t (*msg_sent)(network_client *c, uint32_t seq);
 	void	(*kill)(network_client *c);

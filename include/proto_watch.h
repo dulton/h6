@@ -4,8 +4,12 @@
 #include <pthread.h>
 #include <stdint.h>
 #include "list.h"
+#include "h6_ev.h"
 #include "proto_parser.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef void (*proto_watch_on_fin)(void *u);
 typedef struct __proto_watch proto_watch;
@@ -56,7 +60,8 @@ int32_t proto_watch_write_mb(proto_watch *w, mb_t *mb, uint32_t flags);
 int32_t proto_watch_writeable(proto_watch *w, uint32_t size);
 int32_t proto_watch_set_dst(proto_watch *w, uint8_t *ip, int32_t port);
 
-
-#endif	//__TINY_RAIN_PROTO_WATCH_H__
+#ifdef __cplusplus
+}
+#endif
 
 #endif
