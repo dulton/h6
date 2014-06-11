@@ -18,7 +18,7 @@ h6_create_server()
         relay_set_init(&server->rs);
         server->sched = h6_sched_new(DEFAULT_LOOPS);
         server->ls = alloc_h6_listener();
-        listener_set_owner(ls, server);
+        listener_set_owner(server->ls, server);
     }
     
     return server;

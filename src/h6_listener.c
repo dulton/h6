@@ -38,7 +38,7 @@ h6_listener_on_event(h6_ev_t *ev, int revents, void *user_data)
 		);
 
 		server = (h6_server *)listener_get_owner((listener_t *)lt);
-		client_set_add(&server->cs, cli);
+		client_set_add(&server->src_cs, cli);
 
 		TRACE_TRACE(
 			"Add new client, sock:'%d'.", sock
@@ -50,6 +50,15 @@ h6_listener_on_event(h6_ev_t *ev, int revents, void *user_data)
 	}
 	
 	return H6_TRUE;
+}
+
+static void
+h6_listener_on_ev_fin(h6_ev_t *ev)
+{
+	h6_listener_t *lt;
+
+	lt = (h6_listener_t*)h6_ev_u(ev);
+	obj_unref(lt);
 }
 
 static int32_t
