@@ -201,8 +201,8 @@ init_this(network_client *nc, uint32_t factory, void *io)
     
 	nc->state = 0;
     
-	nc->lock = (pthread_mutex_t)malloc(sizeof(pthread_mutex_t));
-    pthread_mutex_init(nc->lock, NULL);
+	nc->lock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+        pthread_mutex_init(nc->lock, NULL);
 
 	return 0;
 }

@@ -9,7 +9,7 @@ proto_parser_finalize(proto_parser *parser)
 
 
 static __inline__ void
-on_obj_fin(obj *p)
+on_obj_fin(obj_t *p)
 {
 	proto_parser *parser = (proto_parser*)p;
 
@@ -31,7 +31,7 @@ alloc_proto_parser(uint32_t size, proto_parser_ops *ops, void *u)
 	if (size < sizeof(*parser))
 		return NULL;
 
-	parser = (proto_parser*)obj_new(size, on_obj_fin);
+	parser = (proto_parser*)obj_new(size, on_obj_fin, __FUNCTION__);
 	parser->ops = NULL;
 
 	if (ops && ops->init)

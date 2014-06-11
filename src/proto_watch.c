@@ -6,6 +6,7 @@
 #include "trace.h"
 #include "unix_sock.h"
 #include "h6_def.h"
+#include "h6_sched.h"
 
 #define PROTO_WATCH_WEIGHT		1
 #define MAX_BACKLOG_SIZE		65536
@@ -144,7 +145,7 @@ __proto_watch_write_pending(proto_watch *w)
 
 
 static __inline__ int32_t
-__proto_watch_recv(proto_watch *w, msg *m, void *u)
+__proto_watch_recv(proto_watch *w, msg_t *m, void *u)
 {
 	int32_t err = 0;
 
@@ -166,7 +167,7 @@ __proto_watch_recv(proto_watch *w, msg *m, void *u)
 static __inline__ h6_bool_t
 __proto_watch_dispath(proto_watch *w, int32_t revents, void *u)
 {
-	msg *m;
+	msg_t *m;
 	int32_t err = -EAGAIN;
 	socklen_t len = sizeof(err);
 
@@ -579,7 +580,7 @@ write_done:
 
 
 int32_t
-proto_watch_write(proto_watch *w, msg *m, uint32_t seq, uint32_t flags)
+proto_watch_write(proto_watch *w, msg_t *m, uint32_t seq, uint32_t flags)
 {//@{Destroy msg certainly}
 	mb_t *mb = msg_to_mb(m);
 

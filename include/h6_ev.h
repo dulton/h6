@@ -43,7 +43,7 @@ struct _h6_ev_opt_t
 {
 	h6_ev_loop      *loop;
 	h6_ev_dispath   dispath;
-	h6_ev_ondestroy notify;
+	h6_ev_ondestroy destroy;
 };
 
 h6_ev_loop *h6_ev_loop_new( void );

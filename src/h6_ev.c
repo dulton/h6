@@ -174,7 +174,7 @@ h6_ev_loop_init(h6_ev_loop *loop)
 {
     atomic_set(&loop->ref_count, 1);
 
-	loop->ev_loop = h6_ev_loop_new(EVFLAG_AUTO);
+	loop->ev_loop = h6_ev_loop_new();
 	if (loop->ev_loop == NULL)
         return -1;
 
@@ -602,8 +602,8 @@ void h6_ev_unref(h6_ev_t *event)
 	REF_DEBUG_TEST(event);
 	if (atomic_dec_and_test_zero(&event->ref_count))
 	{
-		if (event->destroy)
-			(*event->destroy)(event);
+		if (event->opt->destroy)
+			(*event->opt->destroy)(event);
 		free(event);
 	}
 }
@@ -617,7 +617,7 @@ h6_ev_set_callback(h6_ev_t *event, h6_ev_dispath dispath,
 
 	event->user_data = user_data;
 	event->opt->dispath = dispath;
-	event->opt->notify  = notify;
+	event->opt->destroy = notify;
 }
 
 void

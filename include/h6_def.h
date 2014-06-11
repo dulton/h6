@@ -3,8 +3,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <errno.h>
 
 #define DEFAULT_PW_WINSIZE  25
+
+#define EUSER		255
+#define EKILLED		(EUSER + 1)
+#define ESESSION	(EUSER + 2)
 
 typedef enum 
 {
