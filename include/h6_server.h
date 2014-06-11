@@ -8,7 +8,7 @@
 #define __H6_SERVER_H__
 
 #include "h6_sched.h"
-#include "h6_client_set.h"
+#include "client_set.h"
 #include "h6_relay_set.h"
 #include "listener.h"
 
@@ -29,10 +29,10 @@ struct __h6_server
     client_set   src_cs;
     client_set   dst_cs;
     
-	relay_set    rs;	    /* relay set */
+    relay_set    rs;	    /* relay set */
     
-	listener_t   *ls;	    /* listener set */
-	h6_scher_t   *sched;
+    listener_t   *ls;	    /* listener */
+    h6_scher_t   *sched;
 };
 
 h6_server *h6_create_server();

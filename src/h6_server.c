@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "h6_server.h"
+#include "h6_listener.h"
 
 #define DEFAULT_LOOPS 4
 
