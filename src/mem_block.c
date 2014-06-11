@@ -1,10 +1,11 @@
+#include <pthread.h>
 #include "mem_block.h"
 
 #define MAX_CACHE_COUNT             128
 #define MAX_GATHER_MEM              65536
 
 static struct list_head cache_heads;
-static LOCK_T cache_lock;
+static pthread_mutex_t  *cache_lock;
 static int32_t cache_counts = 0;
 
 
@@ -12,11 +13,13 @@ void
 init_memblock_facility( void )
 {
     INIT_LIST_HEAD(&cache_heads);
-    cache_lock = LOCK_NEW();    
+    
+    cache_lock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(cache_lock, NULL);
 }
 
 
-static __inline__ mem_block*
+static __inline__ mb_t*
 __alloc_memblock( void )
 {
     struct list_head *l;
@@ -26,28 +29,28 @@ __alloc_memblock( void )
         l = cache_heads.next;
         list_del(l);
         --cache_counts;
-        return container_of(l, mem_block, list);
+        return container_of(l, mb_t, list);
     }
 
-    return (mem_block*)tr_alloc(sizeof(mem_block));
+    return (mb_t*)malloc(sizeof(mb_t));
 }
 
 
-mem_block *
+mb_t *
 alloc_memblock( void )
 {
-    mem_block *mb;
+    mb_t *mb;
 
-    AQUIRE_LOCK(cache_lock);
+    pthread_mutex_lock(cache_lock);
     mb = __alloc_memblock();
-    RELEASE_LOCK(cache_lock);
+    pthread_mutex_unlock(cache_lock);
 
     return mb;
 }
 
 
 static __inline__ void
-__free_memblock(mem_block *mb)
+__free_memblock(mb_t *mb)
 {
     if (cache_counts < MAX_CACHE_COUNT)
     {
@@ -56,21 +59,21 @@ __free_memblock(mem_block *mb)
         return;
     }
 
-    tr_free(mb, sizeof(*mb));
+    free(mb);
 }
 
 
 static __inline__ void
-_free_memblock(mem_block *mb)
+_free_memblock(mb_t *mb)
 {
-    AQUIRE_LOCK(cache_lock);
+    pthread_mutex_lock(cache_lock);
     __free_memblock(mb);
-    RELEASE_LOCK(cache_lock);
+    pthread_mutex_unlock(cache_lock);
 }
 
 
 void
-free_memblock(mem_block *mb)
+free_memblock(mb_t *mb)
 {
     (*mb->finalize)(mb);
     _free_memblock(mb);
@@ -78,22 +81,22 @@ free_memblock(mem_block *mb)
 
 
 static void
-fin_gather_memb_block(mem_block *mb)
+fin_gather_memb_block(mb_t *mb)
 {
-    tr_free(mb->ptr, mb->b_size);
+    free(mb->ptr);
 }
 
 
-mem_block *
+mb_t *
 alloc_gather_memblock(uint32_t size)
 {
     uint8_t *ptr;
-    mem_block *mb;
+    mb_t *mb;
 
     if (size > MAX_GATHER_MEM)
         return NULL;
 
-    ptr = tr_alloc(size);
+    ptr = (uint8_t *)malloc(size);
     if (ptr)
     {
         mb = alloc_memblock();
@@ -110,15 +113,15 @@ alloc_gather_memblock(uint32_t size)
             return mb;
         }
 
-        tr_free(ptr, size);
+        free(ptr);
     }
 
     return NULL;
 }
 
 
-mem_block *
-gather_memblock(mem_block *gather, mem_block *mb)
+mb_t *
+gather_memblock(mb_t *gather, mb_t *mb)
 {
     uint32_t size, left;
 

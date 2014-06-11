@@ -32,7 +32,7 @@ struct __network_client_ops
 	void	(*fin)(network_client *c);
 
 	session *(*create_session)(network_client *c, void *p);
-	int32_t (*msg_recv)(network_client *c, msg *m);
+	int32_t (*msg_recv)(network_client *c, msg_t *m);
 	int32_t (*msg_sent)(network_client *c, uint32_t seq);
 	void	(*kill)(network_client *c);
 	void    (*closed)(network_client *c);
@@ -45,8 +45,8 @@ network_client *network_client_ref(network_client *nc);
 void network_client_kill_unref(network_client *nc);
 
 int32_t network_client_consumable(network_client *nc, uint32_t size);
-int32_t network_client_send_msg(network_client *nc, msg *m, uint32_t seq, uint32_t flags);
-int32_t network_client_send_mb(network_client *nc, mem_block *mb, uint32_t flags);
+int32_t network_client_send_msg(network_client *nc, msg_t *m, uint32_t seq, uint32_t flags);
+int32_t network_client_send_mb(network_client *nc, mb_t *mb, uint32_t flags);
 
 
 #ifdef __cplusplus

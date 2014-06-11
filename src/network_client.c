@@ -1,8 +1,9 @@
+#include "h6_def.h"
 #include "network_client.h"
 #include "h6_factory.h"
 #include "unix_sock.h"
 
-#define DEFAULT_TIMEOUT_SEC		15
+#define DEFAULT_TIMEOUT_SEC		60
 #define DEFAULT_CHECK_TIMES		3
 
 enum
@@ -44,7 +45,7 @@ network_client_create_parser(void *u)
 		return NULL;
 	}
 
-	return factory_create_scpp(factory);
+	return factory_create_client_proto_parser(factory);
 }
 
 
@@ -65,7 +66,7 @@ network_client_release_parser(proto_parser *parser, void *u)
 		return;
 	}
 
-	factory_destroy_scpp(factory, parser);
+	factory_destroy_client_proto_parser(factory, parser);
 }
 
 
@@ -85,7 +86,7 @@ network_client_msg_sent(proto_watch *w, uint32_t seq, void *u)
 
 
 static __inline__ int32_t
-__network_client_msg_recv(network_client *nc, msg *m)
+__network_client_msg_recv(network_client *nc, msg_t *m)
 {
 	int32_t err = -EINVAL;
 
@@ -99,7 +100,7 @@ __network_client_msg_recv(network_client *nc, msg *m)
 
 
 static int32_t
-network_client_msg_recv(proto_watch *w, msg *m, void *u)
+network_client_msg_recv(proto_watch *w, msg_t *m, void *u)
 {
 	int32_t err = 0;
 	network_client *nc = (network_client*)u;
@@ -192,8 +193,11 @@ init_this(network_client *nc, uint32_t factory, void *io)
 	}
 
 	proto_watch_set_window(nc->proto_watch, DEFAULT_PW_WINSIZE);
-	obj_ref(nc);
+
+    // why ?	obj_ref(nc);
+    
 	nc->state = 0;
+    
 	nc->lock = (pthread_mutex_t)malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(nc->lock, NULL);
 
@@ -215,7 +219,7 @@ release_proto_watch(network_client *nc)
 static __inline__ void
 finalize_this(network_client *nc)
 {
-	pthread_mutex_destory(nc->lock);
+	pthread_mutex_destroy(nc->lock);
     free(nc->lock);
     
 	release_proto_watch(nc);
@@ -297,34 +301,9 @@ network_client_kill(client_t *c)
 	{
 		(*nc->ops->kill)(nc);
 	}
+    
 	network_client_self_kill(nc);
 }
-
-
-static __inline__ session *
-__network_client_create_session(network_client *nc, void *p)
-{
-	session *s = NULL;
-
-	if (nc->ops && nc->ops->create_session)
-	{
-		s = (*nc->ops->create_session)(nc, p);
-	}
-
-	return s;
-}
-
-
-static session *
-network_client_create_session(client_t *c, void *p)
-{
-	session *s;
-	network_client *nc = (network_client*)c;
-
-	s = __network_client_create_session(nc, p);
-	return s;
-}
-
 
 static __inline__ int32_t
 __network_client_attach(network_client *nc, void *loop)
@@ -356,7 +335,6 @@ static client_ops client_ops_impl =
 	.init				= network_client_init,
 	.fin				= network_client_finalize,
 	.kill				= network_client_kill,
-	.create_s			= network_client_create_session,
 	.attach				= network_client_attach,
 };
 
@@ -420,7 +398,7 @@ network_client_consumable(network_client *nc, uint32_t size)
 
 
 int32_t
-network_client_send_msg(network_client *nc, msg *m, uint32_t seq,
+network_client_send_msg(network_client *nc, msg_t *m, uint32_t seq,
 	uint32_t flags)
 {
 	int32_t err = -EKILLED;

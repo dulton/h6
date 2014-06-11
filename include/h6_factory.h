@@ -41,6 +41,8 @@ void factory_destroy_h6_listener(h6_factory *factory, listener_t *l);
 h6_scher_t *factory_create_scheduler(h6_factory *factory);
 void factory_destroy_scheduler(h6_factory *factory, h6_scher_t *sched);
 
+proto_parser *factory_create_client_proto_parser(h6_factory *factory);
+void factory_destroy_client_proto_parser(h6_factory *factory, proto_parser *p);
 
 #ifdef __cplusplus
 }

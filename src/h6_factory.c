@@ -76,3 +76,20 @@ factory_destroy_scheduler(h6_factory *factory, h6_scher_t *sched)
 	(*factory->destroy_scheduler)(factory, sched);
 }
 
+proto_parser *
+factory_create_client_proto_parser(h6_factory *factory)
+{
+	if (!factory->create_client_proto_parser)
+		return NULL;
+	return (*factory->create_client_proto_parser)(factory);
+
+}
+
+void
+factory_destroy_client_proto_parser(h6_factory *factory, proto_parser *p)
+{
+	if (!factory->destroy_client_proto_parser)
+		BUG();
+	(*factory->destroy_client_proto_parser)(factory, p);
+}
+

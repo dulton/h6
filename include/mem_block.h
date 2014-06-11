@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-typedef struct __mem_block mem_block;
+typedef struct __mem_block mb_t;
 struct __mem_block
 {
     struct list_head list;
@@ -23,15 +23,15 @@ struct __mem_block
     uint32_t size;
     uint32_t b_size;    /* mem real size */
     void *u;
-    void (*finalize)(mem_block *mb);
+    void (*finalize)(mb_t *mb);
 };
 
 void init_memblock_facility( void );
-mem_block *alloc_memblock( void );
-void free_memblock(mem_block *mb);
+mb_t *alloc_memblock( void );
+void free_memblock(mb_t *mb);
 
-mem_block *alloc_gather_memblock(uint32_t size);
-mem_block *gather_memblock(mem_block *gather, mem_block *mb);
+mb_t *alloc_gather_memblock(uint32_t size);
+mb_t *gather_memblock(mb_t *gather, mb_t *mb);
 
 #ifdef __cplusplus
 }
