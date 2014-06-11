@@ -1,6 +1,7 @@
 #ifndef _MEM_BLOCK_H__
 #define _MEM_BLOCK_H__
 
+#include <stdint.h>
 #include "list.h"
 
 #define MEMBLOCK_FLGS_DROPABLE	0x0001

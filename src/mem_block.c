@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <stdlib.h>
 #include "mem_block.h"
 
 #define MAX_CACHE_COUNT             128
