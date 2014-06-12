@@ -1,18 +1,20 @@
 #include "h6_client.h"
+#include "trace.h"
+#include "unix_sock.h"
 
 static __inline__ uint8_t *
 h6_cmd_p(int32_t id)
 {
 	uint8_t *str[] = {
-		"UNKNOW"
+	"UNKNOW"
         ,"SETUP_CHANNEL"
         ,"RESPONSE"
-        ,"DATA",
-		,"REGISTER"
-        ,"HEARTBEAT"
+        ,"DATA"
+	,"REGISTER"
+        ,"HEART_BEAT"
 	};
 
-	if (id < H6_UNKNOWN || id > H6_HEARTBEAT)
+	if (id < H6_UNKNOWN || id > H6_HEART_BEAT)
 		return "ERROR";
     
 	return str[id];
@@ -82,7 +84,7 @@ h6_client_handle_msg(network_client *c, msg_t *req)
 	id = h6_client_recognize(hc, req);
 	TRACE_TRACE(
 		"h6-client '%p' handle msg_t '%s'.",
-		c, __str(rtsp_cmd_p(id)));
+		c, __str(h6_cmd_p(id)));
 
 	switch (id)
 	{

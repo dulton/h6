@@ -51,10 +51,10 @@ struct __h6_client_ops
 
 	uint32_t (*recognize)(h6_client *hc, msg_t *req);
 	int32_t	(*on_setup_channel)(h6_client *hc, msg_t *req);
-    int32_t (*on_response(h6_client *hc, msg_t req);
+    	int32_t (*on_response)(h6_client *hc, msg_t *req);
 	int32_t (*on_data)(h6_client *hc, msg_t *req);
-    int32_t (*on_register)(h6_client *hc, msg_t *req);
-    int32_t (*on_heart_beat)(h6_client *hc, msg_t *req);
+	int32_t (*on_register)(h6_client *hc, msg_t *req);
+	int32_t (*on_heart_beat)(h6_client *hc, msg_t *req);
     
 	void    (*on_closed)(h6_client *hc);
 	void    (*on_error)(h6_client *hc, int32_t err);
