@@ -12,6 +12,8 @@ h6_create_server()
     server = (h6_server *)calloc(1, sizeof(h6_server));
     if (server)
     {
+        async_trace_init();
+        
         client_set_init(&server->src_cs);
         client_set_init(&server->dst_cs);
         
