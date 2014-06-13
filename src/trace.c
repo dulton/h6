@@ -278,7 +278,7 @@ async_ring_buf_write(async_ring_buf_t *buf, char *string, size_t len)
 
 //===========================================================================
 
-async_ring_buf_t *output;
+static async_ring_buf_t *output;
 static char *get_level_str(uint32_t level)
 {
     static char *info[5] = {

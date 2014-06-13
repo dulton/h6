@@ -32,9 +32,9 @@ typedef struct _async_ring_buffer
     
 } async_ring_buf_t;
 
-async_ring_buf_t* async_ring_buf_new(uint32_t size);
-void async_ring_buf_free(async_ring_buf_t *buf);
-uint32_t async_ring_buf_write(async_ring_buf_t *buf, char *string, size_t len);
+extern async_ring_buf_t* async_ring_buf_new(uint32_t size);
+extern void async_ring_buf_free(async_ring_buf_t *buf);
+extern uint32_t async_ring_buf_write(async_ring_buf_t *buf, char *string, size_t len);
 
 //========================================================================
 
@@ -71,7 +71,7 @@ uint32_t async_ring_buf_write(async_ring_buf_t *buf, char *string, size_t len);
 
 #define TRACE_ADJUST_LEVEL(level)       do {trace_adjust(level);} while(0)
 
-extern async_ring_buf_t *output;
+//extern async_ring_buf_t *output;
 extern int async_trace_init(void);
 extern void async_trace_destroy(void);
 extern void trace(int level, const char *format, ...);
