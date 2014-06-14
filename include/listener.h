@@ -8,9 +8,12 @@ typedef struct __listener_ops   listener_ops;
 
 struct __listener
 {
-    obj_t        __super;
-	listener_ops *ops;
-	void         *server;	/* pointer owner, which should be a server */
+    obj_t               __super;
+
+    struct list_head    list_node;
+
+	listener_ops        *ops;
+	void                *server;	/* pointer owner, which should be a server */
 };
 
 struct __listener_ops

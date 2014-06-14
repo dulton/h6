@@ -2,9 +2,16 @@
 #include "listener.h"
 
 static __inline__ void
+init_this(listener_t *l)
+{
+    INIT_LIST_HEAD(&l->list_node);
+    l->server = NULL;
+}
+
+static __inline__ void
 listener_finalize(listener_t *l)
 {
-    // nothing to do ...
+    assert(list_empty(&l->list_node));
 }
 
 static __inline__ void
@@ -20,7 +27,6 @@ on_listener_fin(obj_t *p)
 	listener_finalize(l);
 }
 
-
 listener_t *
 listener_alloc(uint32_t size, listener_ops *ops, void *u)
 {
@@ -31,20 +37,23 @@ listener_alloc(uint32_t size, listener_ops *ops, void *u)
 		return NULL;
 
 	l = (listener_t*)obj_new(size, on_listener_fin, __FUNCTION__);
-	l->server = NULL;
+    if (l)
+    {
+        init_this(l);
 
-	if (ops && ops->init)
-	{
-		err = (*ops->init)(l, u);
-		if (err)
-		{
-			listener_finalize(l);
-			obj_unref((obj_t *)l);
-			return NULL;
-		}
-	}
+    	if (ops && ops->init)
+    	{
+    		err = (*ops->init)(l, u);
+    		if (err)
+    		{
+    			listener_finalize(l);
+    			obj_unref((obj_t *)l);
+    			return NULL;
+    		}
+    	}
 
-	l->ops = ops;
+    	l->ops = ops;
+    }
 	return l;
 }
 
