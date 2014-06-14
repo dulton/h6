@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "h6_server.h"
 
 #define H6_VERSION  "1.0.0"
@@ -22,8 +24,8 @@ version(char *name)
 void
 usage(char *name)
 {
-	fprintf(stdout, "Usage: %s [options]\r\n", name);
-	fprintf(stdout, "\t--version \tdisplay version information.\r\n");
+    fprintf(stdout, "Usage: %s [options]\r\n", name);
+    fprintf(stdout, "\t--version \tdisplay version information.\r\n");
     fprintf(stdout, "\t--mode=[options] It can be running in following mode:\r\n");
     fprintf(stdout, "\t\t local-proxy: \r\n");
     fprintf(stdout, "\t\t server-replay: \r\n");        
@@ -38,13 +40,19 @@ main(int argc, char *argv[])
     int i;
     svr_mode_t mode = UNKNOWN;
     
+    if (argc < 2)
+    {
+        usage(argv[0]);
+        exit(-1);
+    }
+
     for (i = 1; i < argc; i++)
     {
-		if (strcmp(argv[i] , "--version") == 0)
-		{
-			version(argv[0]);
-			exit(0);
-		}
+	if (strcmp(argv[i] , "--version") == 0)
+	{
+            version(argv[0]);
+	    exit(0);
+	}
         else if (strcmp(argv[i], "--mode=local-proxy") == 0)
         {
             mode = LOCAL_PROXY;
