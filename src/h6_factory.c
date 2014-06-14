@@ -44,12 +44,12 @@ void
 factory_destroy_h6_listener(h6_factory *factory, listener_t *l)
 {
 	if (!factory->destroy_listener)
-    {   
+    	{   
 		TRACE_ERROR("Don't define destroy_listener function, cann't destroy listener(%p)\r\n", l);
-        return;
-    }
+        	return;
+    	}
 
-    (*factory->destroy_listener)(factory, l);
+	(*factory->destroy_listener)(factory, l);
 
 }
 
@@ -68,10 +68,10 @@ void
 factory_destroy_scheduler(h6_factory *factory, h6_scher_t *sched)
 {
 	if (!factory->destroy_scheduler)
-    {   
-        TRACE_ERROR("Don't define destroy_scheduler function, cann't destroy scheduler(%p)\r\n", sched);
-        return;
-    }
+    	{   
+        	TRACE_ERROR("Don't define destroy_scheduler function, cann't destroy scheduler(%p)\r\n", sched);
+        	return;
+    	}
     
 	(*factory->destroy_scheduler)(factory, sched);
 }
@@ -89,7 +89,11 @@ void
 factory_destroy_client_proto_parser(h6_factory *factory, proto_parser *p)
 {
 	if (!factory->destroy_client_proto_parser)
-		BUG();
+	{
+		TRACE_ERROR("Don't define destroy_client_proto_parser function, cann't destroy proto_parser(%p\r\n)", p);
+		return;
+	}
+	
 	(*factory->destroy_client_proto_parser)(factory, p);
 }
 
