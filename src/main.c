@@ -33,6 +33,10 @@ usage(char *name)
     fprintf(stdout, "\r\n");
 }
 
+void start_local_proxy()
+{
+    
+}
 
 int 
 main(int argc, char *argv[])
@@ -72,5 +76,15 @@ main(int argc, char *argv[])
         }
     }
 
+    switch(mode)
+    {
+    case LOCAL_PROXY:
+        start_local_proxy();        
+        break;
+        
+    default:
+        break;
+    }
+    
     exit(0);
 }
