@@ -160,6 +160,16 @@ list_remove_link(list_t *list, list_t *link)
 }
 
 list_t *
+list_delete_link(list_t *list, list_t *link)
+{
+	list = list_remove_link(list, link);
+	list_free_1(link);
+
+	return list;    
+}
+
+
+list_t *
 list_concat(list_t *list1, list_t *list2)
 {
 	list_t *last;
