@@ -1,19 +1,15 @@
 #include <assert.h>
 #include <errno.h>
-#include "listener_set.c"
-
-struct __listener_set_ops
-{
-	int32_t (*init)(lsn_set_t *lset, void *u);
-	void	(*fin)(lsn_set_t *lset);
-	void	(*kill)(lsn_set_t *lset);    
-}
+#include <stdlib.h>
+#include "listener_set.h"
 
 static __inline__ void
 init_this(lsn_set_t *lset)
 {
     INIT_LIST_HEAD(&lset->lsn_list);
-    lset->lock = NULL;
+
+    lset->lock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(lset->lock);    
 }
 
 
@@ -22,6 +18,9 @@ fin_this(lsn_set_t *lset)
 {
     // ensure self had been removed from list
 	assert(list_empty(&lset->list_node));
+
+    pthread_mutex_destroy(lset->lock);
+    free(lset->lock);    
 }
 
 
@@ -67,32 +66,6 @@ lsn_set_alloc(uint32_t size, lsn_set_ops *ops, void *u, const char *name)
 	}
 
 	return lset;    
-}
-
-static int32_t
-listener_set_init(lsn_set_t *lset, void *u)
-{
-    assert(lset);
-    
-    lset->lock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-    pthread_mutex_init(lset->lock);
-}
-
-void
-listener_set_destroy(lsn_set_t *lset)
-{
-    assert(lset);
-
-    pthread_mutex_destroy(lset->lock);
-    free(lset->lock);    
-}
-
-
-static struct __listener_set_ops lsn_ops
-{
-    .init = listener_set_init;
-    .fin  = listener_set_destroy;
-    .kill = NULL;
 }
 
 lsn_set_t *
