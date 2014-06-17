@@ -1,7 +1,7 @@
 #include <errno.h>
 #include "unix_sock.h"
 #include "h6_listener.h"
-#include "h6_server.h"
+#include "h6_basic_server.h"
 #include "h6_def.h"
 #include "trace.h"
 
@@ -11,7 +11,7 @@ h6_listener_on_event(h6_ev_t *ev, int revents, void *user_data)
 	h6_listener_t *lt;
 	int32_t sock;
 	client_t *cli;
-	h6_server *server;
+	h6_svr_t *server;
 
 	lt = (h6_listener_t *)h6_ev_u(ev);
 
@@ -37,7 +37,7 @@ h6_listener_on_event(h6_ev_t *ev, int revents, void *user_data)
 			"Generate new client, sock:'%d'.", sock
 		);
 
-		server = (h6_server *)listener_get_owner((listener_t *)lt);
+		server = (h6_svr_t *)listener_get_owner((listener_t *)lt);
 		client_set_add(&server->src_cs, cli);
 
 		TRACE_TRACE(
@@ -169,7 +169,7 @@ static int32_t
 h6_listener_run(listener_t *l)
 {
 	h6_listener_t *lt;
-	h6_server *server;
+	h6_svr_t *server;
 
 	lt = (h6_listener_t *)l;
 	if (!lt->event)
@@ -181,7 +181,7 @@ h6_listener_run(listener_t *l)
     // and will be obj_unref while destroying event object
     obj_ref(lt);
 
-	server = (h6_server*)listener_get_owner((listener_t *)lt);
+	server = (h6_svr_t*)listener_get_owner((listener_t *)lt);
 	h6_sched_add(server->sched, lt->event, 1);
     
 	return 0;
