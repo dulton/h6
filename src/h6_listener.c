@@ -13,7 +13,7 @@ h6_listener_on_event(h6_ev_t *ev, int revents, void *user_data)
 	client_t *cli;
 	h6_server *server;
 
-	lt = (h6_listener_t*)h6_ev_u(ev);
+	lt = (h6_listener_t *)h6_ev_u(ev);
 
 	if (revents & EV_TIMER)
 	{
@@ -89,14 +89,34 @@ h6_listener_init(listener_t *l, void *u)
 }
 
 static void
+h6_listener_finalize(h6_listener_t *lt)
+{
+    h6_svr_t *svr;
+
+    if (lt->event)
+    {
+        svr = (h6_svr_t*)listener_get_owner((listener_t *)lt);        
+        h6_sched_remove(svr->sched, lt->event);
+        h6_ev_unref(lt->event);
+    }
+    
+    if (lt->sock >= 0)
+    {
+        unix_sock_close(lt->sock);
+    }      
+}
+
+static void
 h6_listener_fin(listener_t *l)
 {
 	h6_listener_t *lt = (h6_listener_t*)l;
-    
+   
     if (lt->ops)
     {
         (*lt->ops->fin)(lt);
     }
+
+    h6_listener_finalize(lt);
     
     return;
 }
@@ -133,9 +153,8 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 
 	h6_ev_set_callback(ev, h6_listener_on_event, l, h6_listener_on_ev_fin);
 	h6_ev_set_timeout((h6_ev_t*)ev, 3*1000);
-
+                      
 	unix_sock_set_flags(sock, O_NONBLOCK);
-
     
 	lt->port = port;
 	lt->host = 0;
@@ -158,9 +177,13 @@ h6_listener_run(listener_t *l)
 		return -EINVAL;
 	}
 
+    // it must be added one while putting h6_listener_t object into event loop
+    // and will be obj_unref while destroying event object
+    obj_ref(lt);
+
 	server = (h6_server*)listener_get_owner((listener_t *)lt);
 	h6_sched_add(server->sched, lt->event, 1);
-
+    
 	return 0;
 }
 
@@ -192,3 +215,5 @@ alloc_h6_listener(h6_listener_ops *ops)
 {
     return listener_alloc(sizeof(h6_listener_t), &l_ops, ops);
 }
+
+

@@ -85,6 +85,19 @@ listener_start(listener_t *l)
 	return err;	
 }
 
+void
+listener_stop(listener_t *l)
+{
+	int32_t err = -EINVAL;
+    
+	if (l->ops && l->ops->stop)
+	{
+		err = (*l->ops->stop)(l);
+	}
+
+	return err;	    
+}
+
 
 client_t *
 listener_generate(listener_t *l, void *parm)

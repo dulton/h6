@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-typedef struct __h6_listener_ h6_listener_t;
+typedef struct __h6_listener_    h6_listener_t;
 typedef struct __h6_listener_ops h6_listener_ops;
 
 struct __h6_listener_
@@ -35,7 +35,8 @@ struct __h6_listener_ops
 };
 
 
-listener_t *alloc_h6_listener();
+listener_t *alloc_h6_listener(h6_listener_ops *ops);
+
 
 #ifdef __cplusplus
 }

@@ -22,12 +22,15 @@ struct __listener_ops
 	void 	    (*fin)(listener_t *l);
 	int32_t     (*set_port)(listener_t *l, uint16_t port);
 	int32_t     (*run)(listener_t *l);
+    int32_t     (*stop)(listener_t *l);
 	client_t*   (*new_cli)(listener_t *l, void *parm);
 };
 
 listener_t *listener_alloc(uint32_t size, listener_ops *ops, void *u);
 int32_t listener_bind(listener_t *l, uint16_t port);
 int32_t listener_start(listener_t *l);
+void    listener_stop(listener_t *l);
+
 client_t *listener_generate(listener_t *l, void *parm);
 
 void listener_set_owner(listener_t *l, void *p);
