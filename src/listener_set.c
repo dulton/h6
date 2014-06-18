@@ -9,7 +9,7 @@ init_this(lsn_set_t *lset)
     INIT_LIST_HEAD(&lset->lsn_list);
 
     lset->lock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-    pthread_mutex_init(lset->lock);    
+    pthread_mutex_init(lset->lock, NULL);    
 }
 
 
@@ -17,7 +17,7 @@ static __inline__ void
 fin_this(lsn_set_t *lset)
 {
     // ensure self had been removed from list
-	assert(list_empty(&lset->list_node));
+    assert(list_empty(&lset->lsn_list));
 
     pthread_mutex_destroy(lset->lock);
     free(lset->lock);    
@@ -122,7 +122,7 @@ __listen_set_add(lsn_set_t *set, listener_t *l)
 	if (list_empty(&l->list_node))
 	{
 		err = 0;
-		list_add(&l->list_node, &set->c_list);
+		list_add(&l->list_node, &set->lsn_list);
 	}
 
 	return err;    

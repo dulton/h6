@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "obj.h"
 #include "list.h"
+#include "listener.h"
 
 typedef struct __listener_set       lsn_set_t;
 typedef struct __listener_set_ops   lsn_set_ops;
@@ -17,6 +18,13 @@ struct __listener_set
 	pthread_mutex_t     *lock;
 
     lsn_set_ops         *ops;
+};
+
+struct __listener_set_ops
+{
+	int32_t (*init)(lsn_set_t *set, void *u);
+	void	(*fin)(lsn_set_t *set);
+	void	(*kill)(lsn_set_t *set);
 };
 
 lsn_set_t *lsn_set_new();
