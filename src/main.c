@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "h6_server.h"
 
 #define H6_VERSION  "1.0.0"
 #define H6_DESCRIPTION "a p2p proxy or relay server"

@@ -38,7 +38,7 @@ h6_listener_on_event(h6_ev_t *ev, int revents, void *user_data)
 		);
 
 		server = (h6_svr_t *)listener_get_owner((listener_t *)lt);
-		client_set_add(&server->src_cs, cli);
+		h6_server_add_client(server, cli);
 
 		TRACE_TRACE(
 			"Add new client, sock:'%d'.", sock
