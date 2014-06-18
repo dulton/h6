@@ -12,7 +12,7 @@ static __inline__ void
 fin_this(h6_svr_t *s)
 {
     // ensure self had been removed from list
-	TRACE_DEBUG("server objs(%p) is destroy...\r\n", s)	
+    TRACE_DEBUG("server objs(%p) is destroy...\r\n", s);
 }
 
 static __inline__ void
@@ -22,7 +22,7 @@ on_svr_fin(obj_t *p)
 
 	if (s->ops && s->ops->fin)
 	{
-		(*s->ops->fin)(s);
+	    (*s->ops->fin)(s);
 	}
 
 	fin_this(s);
@@ -63,6 +63,8 @@ h6_server_ref(h6_svr_t *s)
 {
     if (s)
         obj_ref(s);
+
+    return s;
 }
 
 void
@@ -83,17 +85,17 @@ server_kill(h6_svr_t *s)
 {   
 	if (s->ops && s->ops->kill)
 	{
-		(*s->ops->kill)(c);
+	    (*s->ops->kill)(s);
 	}
 
-    server_self_kill(c);
+    server_self_kill(s);
 }
 
 void
 h6_server_kill_unref(h6_svr_t *s)
 {
-    server_kill();
-    h6_server_unref();
+    server_kill(s);
+    h6_server_unref(s);
 }
 
 int32_t
@@ -109,5 +111,19 @@ h6_server_attach(h6_svr_t *s, void *sched)
 
 	return err;    
 }
+
+int32_t
+h6_server_add_client(h6_svr_t *s, void *u)
+{
+    int32_t err = -EINVAL;
+
+    if (s->ops && s->ops->add_client)
+    {
+        err = (*s->ops->add_client)(s, u);
+    }
+
+    return err;
+}
+
 
 
