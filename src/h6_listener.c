@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <unistd.h>
 #include "unix_sock.h"
 #include "h6_listener.h"
 #include "h6_basic_server.h"
@@ -17,7 +18,7 @@ h6_listener_on_event(h6_ev_t *ev, int revents, void *user_data)
 
 	if (revents & EV_TIMER)
 	{
-		TRACE_TRACE("=== LISTEN WAITING... ===");
+		TRACE_DEBUG("=== LISTEN WAITING... ===\r\n");
 		return H6_TRUE;
 	}
 
@@ -75,7 +76,7 @@ h6_listener_init(listener_t *l, void *u)
 	lt->ops = NULL;
 	lt->user_data = NULL;
 
-	if (ops->init)
+	if (ops && ops->init)
 	{
 		err = (*ops->init)(lt);
 		if (err)
@@ -127,6 +128,7 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 	h6_listener_t *lt;
 	h6_ev_t *ev;
 	int32_t sock;
+	h6_svr_t *server;
 
 	lt = (h6_listener_t*)l;
 
@@ -162,29 +164,30 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 	lt->event = ev;
 	lt->user_data = NULL;
 
+	server = (h6_svr_t*)listener_get_owner((listener_t *)lt);
+    if (server && server->sched)
+    {
+        obj_ref(lt); // ???
+        h6_sched_add(server->sched, lt->event, 1);        
+    }
 	return 0;
 }
 
-static int32_t
-h6_listener_run(listener_t *l)
+static void
+h6_listener_kill(listener_t *l)
 {
-	h6_listener_t *lt;
-	h6_svr_t *server;
+	h6_svr_t *server;    
+	h6_listener_t *lt = (h6_listener_t *)l;
 
-	lt = (h6_listener_t *)l;
-	if (!lt->event)
-	{
-		return -EINVAL;
-	}
+    server = (h6_svr_t*)listener_get_owner((listener_t *)lt);
+    if (server && server->sched && lt->event)
+    {
+        h6_sched_remove(server->sched, lt->event);
+        h6_ev_unref(lt->event);
+    }
 
-    // it must be added one while putting h6_listener_t object into event loop
-    // and will be obj_unref while destroying event object
-    obj_ref(lt);
-
-	server = (h6_svr_t*)listener_get_owner((listener_t *)lt);
-	h6_sched_add(server->sched, lt->event, 1);
-    
-	return 0;
+    if (lt->sock)
+        close(lt->sock);    
 }
 
 static client_t*
@@ -206,7 +209,7 @@ static listener_ops l_ops =
 	.init		= h6_listener_init,
 	.fin		= h6_listener_fin,
 	.set_port	= h6_listener_set_port,
-	.run		= h6_listener_run,
+    .kill       = h6_listener_kill,	
 	.new_cli	= h6_listener_generate_client
 };
 

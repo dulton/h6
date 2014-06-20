@@ -197,12 +197,12 @@ init_this(network_client *nc, uint32_t factory, void *io)
 
 	proto_watch_set_window(nc->proto_watch, DEFAULT_PW_WINSIZE);
 
-    // why ?	obj_ref(nc);
+    obj_ref(nc); // *****
     
 	nc->state = 0;
     
 	nc->lock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-        pthread_mutex_init(nc->lock, NULL);
+    pthread_mutex_init(nc->lock, NULL);
 
 	return 0;
 }

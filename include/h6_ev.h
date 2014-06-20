@@ -46,7 +46,7 @@ struct _h6_ev_opt_t
 	h6_ev_ondestroy destroy;
 };
 
-h6_ev_loop *h6_ev_loop_new( void );
+h6_ev_loop *h6_ev_loop_new(void);
 h6_ev_loop *h6_ev_loop_ref(h6_ev_loop *loop);
 void h6_ev_loop_unref(h6_ev_loop *loop);
 void h6_ev_loop_run(h6_ev_loop *loop);

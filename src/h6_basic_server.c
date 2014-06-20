@@ -58,26 +58,7 @@ h6_server_alloc(uint32_t size, h6_svr_ops *ops, void *u, const char *name)
         {
             TRACE_ERROR(
                 "ops->init not defined in %s, cann't init server object.\r\n", 
-                __FUNDTION__);
-            obj_unref((obj_t *)s);
-            return NULL;
-        }
-
-        if (ops && ops->set_sched)
-        {
-            err = (*ops->set_sched)(s, &s->sched);
-            if (err)
-            {
-                s->sched = NULL;
-                obj_unref((obj_t *)s);
-                return NULL;
-            }
-        }
-        else
-        {
-            TRACE_ERROR(
-                "ops->set_sched not defined in %s, cann't set scheduler for server.\r\n", 
-                __FUNDTION__);
+                __FUNCTION__);
             obj_unref((obj_t *)s);
             return NULL;
         }
@@ -140,5 +121,18 @@ h6_server_add_client(h6_svr_t *s, void *u)
     return err;
 }
 
-
+int32_t
+h6_server_set_sched(h6_svr_t *svr, h6_scher_t *sched)
+{
+    if (!svr->sched)
+    {
+        svr->sched = sched;
+        return 0;
+    }
+    else
+    {
+        TRACE_ERROR("svr->sched has been set, can set again.\r\n", __FUNCTION__);        
+        return -EINVAL;
+    }
+}
 

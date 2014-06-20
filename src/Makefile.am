@@ -9,10 +9,8 @@ h6_SOURCES = obj.c \
              h6_ev.c \
              h6_sched.c \
              listener.c \
-             listener_set.c \
              h6_listener.c \
              client.c \
-             client_set.c \
              main.c \
              h6_basic_server.c \
     	     h6_local_proxy_server.c

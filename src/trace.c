@@ -133,7 +133,7 @@ trace_thread_worker(void *self)
     async_ring_buf_t *buf = (async_ring_buf_t *)self;
 
     if (atomic_get(&buf->level) <= TRACE_DETAIL_LEVEL)
-        fprintf(stderr, "\r\ntrace thread started...\r\n");
+        fprintf(stderr, "\r\nTrace is enabled...\r\n");
 
     exit_thread = 0;
     while (!exit_thread)
@@ -153,7 +153,7 @@ trace_thread_worker(void *self)
     
     if (atomic_get(&buf->level) <= TRACE_DETAIL_LEVEL)
     {
-        fprintf(stderr, "\r\ntrace thread exited...\r\n");
+        fprintf(stderr, "\r\nTrace is disabled...\r\n");
     }
 
     return NULL;

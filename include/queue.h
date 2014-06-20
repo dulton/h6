@@ -2,6 +2,8 @@
  * queue.h
  * Copyright by Zhang Shiyong, 2014. shiyong.zhang.cn@outlook.com
  */
+#ifndef __QUEUE_H__
+#define __QUEUE_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,3 +77,5 @@ void 			queue_foreach(queue_t *queue, func_visit_custom func, void *data);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // __QUEUE_H__

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "trace.h"
+#include "h6_local_proxy_server.h"
 
 #define H6_VERSION  "1.0.0"
 #define H6_DESCRIPTION "a p2p proxy or relay server"
@@ -34,7 +36,28 @@ usage(char *name)
 
 void start_local_proxy()
 {
+    h6_local_proxy_svr_t *svr;
+
+    svr = h6_local_proxy_server_alloc(
+            sizeof(h6_local_proxy_svr_t)
+            ,NULL
+            ,NULL
+            ,__FUNCTION__);
     
+    if (svr)
+    {
+        h6_local_proxy_server_run(svr, 2);
+        h6_local_proxy_server_bind_port(svr, 1025);
+
+        printf("press any key to quit ...\r\n");
+        getchar();
+
+        h6_local_proxy_server_remove_port(svr, 1025);
+        h6_local_proxy_server_kill_unref(svr);
+    }
+
+    
+    return;
 }
 
 int 
@@ -75,6 +98,9 @@ main(int argc, char *argv[])
         }
     }
 
+    async_trace_init();
+    trace_adjust(1);
+    
     switch(mode)
     {
     case LOCAL_PROXY:
@@ -84,6 +110,8 @@ main(int argc, char *argv[])
     default:
         break;
     }
+
+    async_trace_destroy();
     
     exit(0);
 }

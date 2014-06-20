@@ -174,7 +174,7 @@ h6_ev_loop_init(h6_ev_loop *loop)
 {
     atomic_set(&loop->ref_count, 1);
 
-	loop->ev_loop = h6_ev_loop_new();
+	loop->ev_loop = ev_loop_new(EVFLAG_AUTO);
 	if (loop->ev_loop == NULL)
         return -1;
 
@@ -571,9 +571,17 @@ h6_ev_new(size_t size, int fd, int events)
 	if (size < sizeof(h6_ev_t))
 		return NULL;
 
-	ev = (h6_ev_t *)malloc(size);
-	memset(ev, 0, size);
-
+	ev = (h6_ev_t *)calloc(size, sizeof(char));
+    if (!ev)
+        return NULL;
+    
+    ev->opt = (h6_ev_opt *)calloc(1, sizeof(h6_ev_opt));
+    if (!ev->opt)
+    {
+        free(ev);
+        return NULL;
+    }
+    
     atomic_set(&ev->ref_count, 1);
 	ev->ev_size = size;
 
@@ -604,6 +612,8 @@ void h6_ev_unref(h6_ev_t *event)
 	{
 		if (event->opt->destroy)
 			(*event->opt->destroy)(event);
+
+        free(event->opt);
 		free(event);
 	}
 }

@@ -23,6 +23,7 @@ struct __network_client
 	proto_watch     *proto_watch;
 	uint32_t        state;
 	pthread_mutex_t *lock;
+    
 	network_client_ops *ops;
 };
 
