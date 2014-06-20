@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "h6_basic_server.h"
 #include "trace.h"
 
@@ -53,6 +54,33 @@ h6_server_alloc(uint32_t size, h6_svr_ops *ops, void *u, const char *name)
 				return NULL;
 			}
 		}
+        else
+        {
+            TRACE_ERROR(
+                "ops->init not defined in %s, cann't init server object.\r\n", 
+                __FUNDTION__);
+            obj_unref((obj_t *)s);
+            return NULL;
+        }
+
+        if (ops && ops->set_sched)
+        {
+            err = (*ops->set_sched)(s, &s->sched);
+            if (err)
+            {
+                s->sched = NULL;
+                obj_unref((obj_t *)s);
+                return NULL;
+            }
+        }
+        else
+        {
+            TRACE_ERROR(
+                "ops->set_sched not defined in %s, cann't set scheduler for server.\r\n", 
+                __FUNDTION__);
+            obj_unref((obj_t *)s);
+            return NULL;
+        }
 	}
 
 	return s;    
@@ -78,6 +106,7 @@ static __inline__ void
 server_self_kill(h6_svr_t *s)
 {
     // nothing to do at this moment
+    assert(s->sched == NULL);
 }
 
 static __inline__ void
@@ -96,20 +125,6 @@ h6_server_kill_unref(h6_svr_t *s)
 {
     server_kill(s);
     h6_server_unref(s);
-}
-
-int32_t
-h6_server_attach(h6_svr_t *s, void *sched)
-{
-	int32_t err = -EINVAL;
-
-	s->sched = sched;
-	if (s->ops && s->ops->attach)
-	{
-		err = (*s->ops->attach)(s, sched);
-	}
-
-	return err;    
 }
 
 int32_t

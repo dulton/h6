@@ -6,7 +6,7 @@
 static int32_t
 h6_local_proxy_svr_init(h6_svr_t *svr, void *u)
 {
-    h6_lsn_svr_t *s = (h6_lsn_svr_t *)svr;
+    h6_local_proxy_svr_t *s = (h6_local_proxy_svr_t *)svr;
 
     s->lsn_set = lsn_set_new();
     if (s->lsn_set == NULL)
@@ -27,38 +27,57 @@ h6_local_proxy_svr_init(h6_svr_t *svr, void *u)
 static void
 h6_local_proxy_svr_finalize(h6_svr_t *svr)
 {
-    h6_lsn_svr_t *s = (h6_lsn_svr_t *)svr;
+    h6_local_proxy_svr_t *s = (h6_local_proxy_svr_t *)svr;
+    
+    assert(list_empty(s->lsn_set));
+    assert(list_empty(s->cli_set));
+}
+
+static void
+h6_local_proxy_svr_kill(h6_svr_t *svr)
+{
+    h6_local_proxy_svr_t *s = (h6_local_proxy_svr_t *)svr;
 
     if (s->lsn_set)
         lsn_set_kill_unref(s->lsn_set);
 
     if (s->cli_set)
         client_set_kill_unref(s->cli_set);        
+    
+    if (svr->sched)
+    {
+        h6_sched_free(svr->sched);
+        svr->sched = NULL;
+    }
 }
 
-static void
-h6_local_proxy_svr_kill(h6_svr_t *svr)
+
+static int32_t
+h6_local_proxy_svr_set_sched(h6_svr_t *svr, h6_scher_t **sched)
 {
-    // ...
+    h6_local_proxy_svr_t *local_svr;
+
+    local_svr = (h6_local_proxy_svr_t *)svr;
+
+    *sched = h6_sched_new(2);
 }
-
-
 
 static h6_svr_ops h6_svr_ops_impl =
 {
 	.init				= h6_local_proxy_svr_init,
 	.fin				= h6_local_proxy_svr_finalize,
-	.kill				= h6_local_proxy_svr_kill
+	.kill				= h6_local_proxy_svr_kill,
+    .set_sched          = h6_local_proxy_svr_set_sched
 };
 
-h6_lsn_svr_t *
-h6_local_proxy_server_alloc(uint32_t size, h6_lsn_svr_ops *ops, void *u, const char *name)
+h6_local_proxy_svr_t *
+h6_local_proxy_server_alloc(uint32_t size, h6_local_proxy_svr_ops *ops, void *u, const char *name)
 {
-    return (h6_lsn_svr_t *)h6_server_alloc(size, &h6_svr_ops_impl, u, name);
+    return (h6_local_proxy_svr_t *)h6_server_alloc(size, &h6_svr_ops_impl, u, name);
 }
 
 int32_t
-h6_local_proxy_server_bind_port(h6_lsn_svr_t *svr, uint16_t port)
+h6_local_proxy_server_bind_port(h6_local_proxy_svr_t *svr, uint16_t port)
 {
     listener_t *lsn;
     int32_t    err;
@@ -101,7 +120,7 @@ find_listener_by_port(lsn_set_t *set, uint16_t port)
 }
 
 void
-h6_local_proxy_server_remove_port(h6_lsn_svr_t *svr, uint16_t port)
+h6_local_proxy_server_remove_port(h6_local_proxy_svr_t *svr, uint16_t port)
 {
     listener_t *lsn;
 

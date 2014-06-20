@@ -18,11 +18,11 @@ struct __h6_basic_server
 
 struct __h6_basic_server_ops
 {
-	int32_t (*init)(h6_svr_t *c, void *u);
-	void	(*fin)(h6_svr_t *c);
-	void	(*kill)(h6_svr_t *c);
-	int32_t (*attach)(h6_svr_t *c, void *loop);
-    int32_t (*add_client)(h6_svr_t *c, void *u);
+	int32_t (*init)(h6_svr_t *svr, void *u);
+	void	(*fin)(h6_svr_t *svr);
+	void	(*kill)(h6_svr_t *svr);
+	int32_t (*set_sched)(h6_svr_t *svr, h6_scher_t **sched);
+    int32_t (*add_client)(h6_svr_t *svr, void *u);
 };
 
 
@@ -31,7 +31,6 @@ h6_svr_t *H6_server_ref(h6_svr_t *s);
 void h6_server_unref(h6_svr_t *s);
 void h6_server_kill_unref(h6_svr_t *s);
 
-int32_t h6_server_attach(h6_svr_t *s, void *sched);
 int32_t h6_server_add_client(h6_svr_t *s, void *u);
 
 #endif

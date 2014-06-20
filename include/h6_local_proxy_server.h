@@ -10,8 +10,8 @@
 extern "C" {
 #endif
 
-typedef struct __h6_local_proxy_server       h6_lsn_svr_t;
-typedef struct __h6_local_proxy_server_ops   h6_lsn_svr_ops;
+typedef struct __h6_local_proxy_server       h6_local_proxy_svr_t;
+typedef struct __h6_local_proxy_server_ops   h6_local_proxy_svr_ops;
 
 struct __h6_local_proxy_server
 {
@@ -20,23 +20,23 @@ struct __h6_local_proxy_server
     lsn_set_t       *lsn_set;
     client_set_t    *cli_set;
     
-    h6_lsn_svr_ops  *ops;
+    h6_local_proxy_svr_ops  *ops;
 };
 
 struct __h6_local_proxy_server_ops
 {
-	int32_t (*init)(h6_lsn_svr_t *svr);
-	void	(*fin)(h6_lsn_svr_t *svr);    
+	int32_t (*init)(h6_local_proxy_svr_t *svr);
+	void	(*fin)(h6_local_proxy_svr_t *svr);    
 };
 
-h6_lsn_svr_t *
-h6_local_proxy_server_alloc(uint32_t size, h6_lsn_svr_ops *ops, void *u, const char *name);
+h6_local_proxy_svr_t *
+h6_local_proxy_server_alloc(uint32_t size, h6_local_proxy_svr_ops *ops, void *u, const char *name);
 
 int32_t
-h6_local_proxy_server_bind_port(h6_lsn_svr_t *svr, uint16_t port);
+h6_local_proxy_server_bind_port(h6_local_proxy_svr_t *svr, uint16_t port);
 
 void
-h6_local_proxy_server_remove_port(h6_lsn_svr_t *svr, uint16_t port);
+h6_local_proxy_server_remove_port(h6_local_proxy_svr_t *svr, uint16_t port);
 
 #ifdef __cplusplus
 }
