@@ -49,7 +49,7 @@ void start_local_proxy()
         h6_local_proxy_server_run(svr, 2);
         h6_local_proxy_server_bind_port(svr, 1025);
 
-        printf("press any key to quit ...\r\n");
+        TRACE_TRACE("press any key to quit ...\r\n");
         getchar();
 
         h6_local_proxy_server_remove_port(svr, 1025);
@@ -99,7 +99,7 @@ main(int argc, char *argv[])
     }
 
     async_trace_init();
-    trace_adjust(1);
+    trace_adjust(TRACE_DETAIL_LEVEL);
     
     switch(mode)
     {

@@ -179,6 +179,8 @@ h6_listener_kill(listener_t *l)
 	h6_svr_t *server;    
 	h6_listener_t *lt = (h6_listener_t *)l;
 
+    TRACE_ENTER_FUNCTION;
+    
     server = (h6_svr_t*)listener_get_owner((listener_t *)lt);
     if (server && server->sched && lt->event)
     {
@@ -186,8 +188,11 @@ h6_listener_kill(listener_t *l)
         h6_ev_unref(lt->event);
     }
 
-    if (lt->sock)
-        close(lt->sock);    
+    obj_unref(lt);
+//    if (lt->sock)
+//        close(lt->sock);
+
+    TRACE_EXIT_FUNCTION;
 }
 
 static client_t*

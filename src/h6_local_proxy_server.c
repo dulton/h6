@@ -137,6 +137,8 @@ h6_local_proxy_server_remove_port(h6_local_proxy_svr_t *svr, uint16_t port)
 {
     listener_t *lsn;
 
+    TRACE_ENTER_FUNCTION;
+    
     assert(svr->lsn_set);
     lsn = find_listener_by_port(svr->lsn_set, port);
     if (lsn)
@@ -144,6 +146,8 @@ h6_local_proxy_server_remove_port(h6_local_proxy_svr_t *svr, uint16_t port)
         lsn_set_del(svr->lsn_set, lsn);        
         obj_unref(lsn);
     }
+
+    TRACE_EXIT_FUNCTION;
 }
 
 int32_t

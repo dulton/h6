@@ -49,14 +49,12 @@ extern uint32_t async_ring_buf_write(async_ring_buf_t *buf, char *string, size_t
 #define TRACE_SUPPORT_UNINIT()      do {async_trace_destroy();} while(0)
 
 #define TRACE_ENTER_FUNCTION \
-    do {trace(TRACE_DETAIL_LEVEL, " %s\t%s:%d\n", \
-        __FILE__, __FUNCTION__, __LINE__, \
-        "Entering"); \
+    do {trace(TRACE_DETAIL_LEVEL, "%s '%s', %s:%d\n", \
+        "Entering function", __FUNCTION__, __FILE__, __LINE__); \
     } while(0)
 #define TRACE_EXIT_FUNCTION \
-    do {trace(TRACE_DETAIL_LEVEL, " %s\t%s:%d\n", \
-        __FILE__, __FUNCTION__, __LINE__, \
-        "Exiting"); \
+    do {trace(TRACE_DETAIL_LEVEL, " %s '%s', %s:%d\n", \
+        "Exiting funcion", __FUNCTION__, __FILE__, __LINE__); \
     } while(0)
     
 #define TRACE_DETAIL(format, ...)       do {trace(TRACE_DETAIL_LEVEL, format, ## __VA_ARGS__);} while(0)
