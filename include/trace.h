@@ -53,7 +53,7 @@ extern uint32_t async_ring_buf_write(async_ring_buf_t *buf, char *string, size_t
         "Entering function", __FUNCTION__, __FILE__, __LINE__); \
     } while(0)
 #define TRACE_EXIT_FUNCTION \
-    do {trace(TRACE_DETAIL_LEVEL, " %s '%s', %s:%d\n", \
+    do {trace(TRACE_DETAIL_LEVEL, "%s '%s', %s:%d\n", \
         "Exiting funcion", __FUNCTION__, __FILE__, __LINE__); \
     } while(0)
     

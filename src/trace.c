@@ -282,11 +282,11 @@ static async_ring_buf_t *output;
 static char *get_level_str(uint32_t level)
 {
     static char *info[5] = {
-            "DETAIL: ",
-            "DEBUG: ",
-            "TRACE: ",
+            "DETAIL:  ",
+            "DEBUG:   ",
+            "TRACE:   ",
             "WARNING: ",
-            "ERROR: "};
+            "ERROR:   "};
 
     switch(level)
     {
@@ -322,7 +322,7 @@ get_timestamp_str(int level, char *buf, size_t len)
     tmTime = (struct tm *)malloc(sizeof(struct tm));
     tmTime = localtime_r((time_t *)&timestamp.tv_sec, tmTime);
     
-    result = sprintf(buf, "%02d:%02d:%02d.%06ld %s ", 
+    result = sprintf(buf, "%lu.%02d:%02d:%02d.%06ld %s ", pthread_self(),
         tmTime->tm_hour, tmTime->tm_min, tmTime->tm_sec, timestamp.tv_usec,
         get_level_str(level));
 

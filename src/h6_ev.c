@@ -7,36 +7,9 @@
 #include "queue.h"
 #include "h6_def.h"
 #include "h6_ev.h"
+#include "trace.h"
 
-#define FLAGS_EVENT_IN_LOOP 0x01
-    
-#if defined (__GNUC__) && __GNUC__ > 2 /* since 2.9 */
-	# define H6_LIKELY(expr) (__builtin_expect(!!(expr), 1))
-	# define H6_UNLIKELY(expr) (__builtin_expect(!!(expr), 0))
-#else
-	# define H6_LIKELY(expr) (expr)
-	# define H6_UNLIKELY(expr) (expr)
-#endif
-
-#define BUG_ON(x) \
-do {\
-	if (x) \
-	{\
-		fprintf(stderr, "BUG_ON(%s) at file:%s line:%d function:%s!\n", #x, __FILE__, __LINE__, __FUNCTION__); \
-		char *_______________________p = 0; *_______________________p = 0; \
-	}\
-} while (0)
-
-#ifndef REF_DEBUG_TEST
-#define MAX_REF_COUNT_VALUE (10000)	/* Maybe enough */
-#define REF_DEBUG_TEST(pobj)	\
-    do {\
-        assert((pobj) && atomic_get(&(pobj)->ref_count) > 0); \
-        assert(atomic_get(&(pobj)->ref_count) < MAX_REF_COUNT_VALUE); \
-    } while (0)
-#endif
-
-
+#define FLAGS_EVENT_IN_LOOP 0x01    
 
 typedef struct _h6_ev_loop_ops h6_ev_loop_ops;
 typedef void (*loop_ops_func)(h6_ev_loop *loop, h6_ev_loop_ops *ops);
@@ -148,8 +121,13 @@ static __inline__ void
 h6_ev_loop_free(h6_ev_loop *loop)
 {
     // to do ...check
+    TRACE_ENTER_FUNCTION;
+    
     if (loop == NULL)
+    {
+        TRACE_EXIT_FUNCTION;
         return;
+    }
     
     if (loop->ev_loop)
         ev_loop_destroy(loop->ev_loop);
@@ -167,20 +145,27 @@ h6_ev_loop_free(h6_ev_loop *loop)
         list_free(loop->ev_list);
         
     free(loop);
+    TRACE_EXIT_FUNCTION;
 }
 
 static __inline__ int32_t
 h6_ev_loop_init(h6_ev_loop *loop)
 {
+    TRACE_ENTER_FUNCTION;
+    
     atomic_set(&loop->ref_count, 1);
 
 	loop->ev_loop = ev_loop_new(EVFLAG_AUTO);
 	if (loop->ev_loop == NULL)
+	{
+        TRACE_EXIT_FUNCTION;
         return -1;
+	}
 
     if (h6_ev_wakeup_init(&loop->wakeup, loop) != 0)
     {
         ev_loop_destroy(loop->ev_loop);
+        TRACE_EXIT_FUNCTION;
         return -1;
     }
 	loop->loop_running = 0;
@@ -190,6 +175,7 @@ h6_ev_loop_init(h6_ev_loop *loop)
     if (loop->lock == NULL)
     {
         h6_ev_loop_free(loop);
+        TRACE_EXIT_FUNCTION;
         return -1;
     }
     pthread_mutex_init(loop->lock, NULL);
@@ -198,11 +184,13 @@ h6_ev_loop_init(h6_ev_loop *loop)
     if (loop->operations == NULL)
     {
         h6_ev_loop_free(loop);
+        TRACE_EXIT_FUNCTION;
         return -1;    
     }
     
     loop->ev_list = NULL;
-    
+
+    TRACE_EXIT_FUNCTION;
 	return 0;
 }
 
@@ -211,13 +199,18 @@ h6_ev_loop_new(void)
 {
 	h6_ev_loop *loop;
 
+    TRACE_ENTER_FUNCTION;
+    
 	loop = (h6_ev_loop *)calloc(1, sizeof(h6_ev_loop));
 	if (h6_ev_loop_init(loop))
 	{
 		free(loop);
+
+        TRACE_EXIT_FUNCTION;
 		return NULL;
 	}
-    
+
+    TRACE_EXIT_FUNCTION;    
 	return loop;
 }
 
@@ -269,14 +262,21 @@ h6_ev_realse_one(void *data_orig, void *data_custom)
 	h6_ev_t *event;
 	assert(data_orig != NULL);
 
+    TRACE_ENTER_FUNCTION;
+    
 	event = (h6_ev_t*)data_orig;
 	BUG_ON(!event->opt->loop);
 	h6_ev_loop_sync_remove(event->opt->loop, event);
+    h6_ev_unref(event); // release event object now
+
+    TRACE_EXIT_FUNCTION;
 }
 
 static void
 h6_ev_loop_ops_quit(h6_ev_loop *loop, h6_ev_loop_ops *null)
 {
+    TRACE_ENTER_FUNCTION;
+    
 	list_foreach(
 		loop->ev_list,
 		h6_ev_realse_one,
@@ -287,6 +287,8 @@ h6_ev_loop_ops_quit(h6_ev_loop *loop, h6_ev_loop_ops *null)
 	loop->ev_list = NULL;
 
 	ev_break(loop->ev_loop, EVBREAK_ALL);
+
+    TRACE_EXIT_FUNCTION;
 }
 
 void h6_ev_loop_quit(h6_ev_loop *loop)
@@ -294,6 +296,8 @@ void h6_ev_loop_quit(h6_ev_loop *loop)
 	h6_ev_loop_ops *ops;
 	assert(loop != NULL);
 
+    TRACE_ENTER_FUNCTION;
+    
 	pthread_mutex_lock(loop->lock);
 
 	if (!loop->loop_quited)
@@ -308,6 +312,8 @@ void h6_ev_loop_quit(h6_ev_loop *loop)
 	}
 
 	pthread_mutex_unlock(loop->lock);
+
+    TRACE_EXIT_FUNCTION;
 }
 
 static __inline__ void
@@ -343,9 +349,15 @@ h6_ev_loop_ops_add(h6_ev_loop *loop, h6_ev_loop_ops *ops)
 {
 	h6_ev_t *event;
 
+    TRACE_ENTER_FUNCTION;
+
 	event = ops->event;
     loop->ev_list = list_insert_head(loop->ev_list, event);
+    h6_ev_ref(event);   // ref_count should be descreased when it is removed from list
+    
 	h6_ev_loop_sync_add(loop, event);
+
+    TRACE_EXIT_FUNCTION;
 }
 
 static __inline__ h6_bool_t
@@ -353,6 +365,8 @@ h6_ev_loop_add(h6_ev_loop *loop, h6_ev_t *event)
 {
 	h6_bool_t ret = H6_FALSE;
     h6_ev_loop_ops *ops;
+
+    TRACE_ENTER_FUNCTION;
 
     assert(event->opt->loop == NULL);
     
@@ -365,6 +379,7 @@ h6_ev_loop_add(h6_ev_loop *loop, h6_ev_t *event)
         ops = (h6_ev_loop_ops *)calloc(1, sizeof(h6_ev_loop_ops));
         ops->event = event;
         ops->func = h6_ev_loop_ops_add;
+        h6_ev_ref(event); // ref_count will be decreased in function h6_ev_loop_exec_operation
         
         queue_push_tail(loop->operations, ops);
         h6_ev_loop_wakeup(loop);
@@ -373,6 +388,8 @@ h6_ev_loop_add(h6_ev_loop *loop, h6_ev_t *event)
     }
     
     pthread_mutex_unlock(loop->lock);
+
+    TRACE_EXIT_FUNCTION;
     
     return ret;
 }
@@ -389,6 +406,9 @@ static void
 h6_ev_loop_sync_remove(h6_ev_loop *loop, h6_ev_t *event)
 {
 	struct ev_loop *_loop;
+
+    TRACE_ENTER_FUNCTION;
+
 	assert(loop != NULL && event != NULL);
 
 	_loop = loop->ev_loop;
@@ -401,26 +421,37 @@ h6_ev_loop_sync_remove(h6_ev_loop *loop, h6_ev_t *event)
 		ev_timer_stop(_loop, &event->timer);
 
 	event->flags &= ~FLAGS_EVENT_IN_LOOP;
+
+    TRACE_EXIT_FUNCTION;
 }
 
 static void
 h6_ev_loop_ops_remove(h6_ev_loop *loop, h6_ev_loop_ops *ops)
 {
     list_t *list;
+
+    TRACE_ENTER_FUNCTION;
     
     assert(loop != NULL && ops != NULL);
     list = list_find(loop->ev_list, ops->event);
     if (list)
     {
         loop->ev_list = list_remove_link(loop->ev_list, list);
+        list_free(list);
         h6_ev_loop_sync_remove(loop, ops->event);
+        h6_ev_unref(ops->event);    // corresponding with h6_ev_loop_ops_add
     }
+
+    TRACE_EXIT_FUNCTION;
 }
 
 void
 h6_ev_loop_remove(h6_ev_loop *loop, h6_ev_t *event)
 {
 	h6_ev_loop_ops *ops;
+
+    TRACE_ENTER_FUNCTION;
+    
 	assert(event != NULL && loop != NULL);
 
     BUG_ON(loop != event->opt->loop);
@@ -432,12 +463,15 @@ h6_ev_loop_remove(h6_ev_loop *loop, h6_ev_t *event)
 		ops = (h6_ev_loop_ops *)calloc(1, sizeof(h6_ev_loop_ops));
 		ops->event = event;
 		ops->func = h6_ev_loop_ops_remove;
+        h6_ev_ref(event);
 
 		queue_push_tail(loop->operations, ops);
 		h6_ev_loop_wakeup(event->opt->loop);
 	}
 
 	pthread_mutex_unlock(event->opt->loop->lock);
+
+    TRACE_EXIT_FUNCTION;
 }
 
 static __inline__ void
@@ -485,6 +519,7 @@ h6_ev_loop_modify_event(h6_ev_loop *loop, h6_ev_t *event, ops_type_t ops_type)
 		ops->event = event;
 		ops->ops_type = ops_type;
 		ops->func = h6_ev_loop_ops_modify;
+        h6_ev_ref(event);
 
 		queue_push_tail(loop->operations, ops);
 		h6_ev_loop_wakeup(loop);
@@ -501,14 +536,21 @@ h6_ev_loop_exec_operations(h6_ev_loop *loop)
 {
 	h6_ev_loop_ops *ops;
 
+    TRACE_ENTER_FUNCTION;
+    
 	while ((ops = queue_pop_head(loop->operations)))
 	{
 		(*ops->func)(loop, ops);
 		pthread_mutex_unlock(loop->lock);
 
+		if (ops->event)
+			h6_ev_unref(ops->event);
+
 		free(ops);
 		pthread_mutex_lock(loop->lock);
 	}
+
+    TRACE_EXIT_FUNCTION;
 }
 
 static void
@@ -599,8 +641,15 @@ h6_ev_new(size_t size, int fd, int events)
 
 h6_ev_t *h6_ev_ref(h6_ev_t *event)
 {
+    TRACE_ENTER_FUNCTION;
+    
 	REF_DEBUG_TEST(event);
 	atomic_inc(&event->ref_count);
+    TRACE_DEBUG("h6_ev_ref: event=%p, event->ref_count = %d\r\n",
+        event, atomic_get(&event->ref_count));
+
+    TRACE_EXIT_FUNCTION;
+    
 	return event;
 }
 
@@ -610,12 +659,19 @@ void h6_ev_unref(h6_ev_t *event)
 	REF_DEBUG_TEST(event);
 	if (atomic_dec_and_test_zero(&event->ref_count))
 	{
+        TRACE_DEBUG("h6_ev_unref: event=%p, event->ref_count = %d\r\n",
+            event, atomic_get(&event->ref_count));
 		if (event->opt->destroy)
 			(*event->opt->destroy)(event);
 
         free(event->opt);
 		free(event);
 	}
+    else
+    {
+        TRACE_DEBUG("h6_ev_unref: event=%p, event->ref_count = %d\r\n",
+            event, atomic_get(&event->ref_count));
+    }
 }
 
 

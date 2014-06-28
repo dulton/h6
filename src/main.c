@@ -37,7 +37,8 @@ usage(char *name)
 void start_local_proxy()
 {
     h6_local_proxy_svr_t *svr;
-
+    char ch;
+    
     svr = h6_local_proxy_server_alloc(
             sizeof(h6_local_proxy_svr_t)
             ,NULL
@@ -49,8 +50,11 @@ void start_local_proxy()
         h6_local_proxy_server_run(svr, 2);
         h6_local_proxy_server_bind_port(svr, 1025);
 
-        TRACE_TRACE("press any key to quit ...\r\n");
-        getchar();
+        TRACE_TRACE("press 'X' key to quit ...\r\n");
+        do 
+        {
+            ch = getchar();
+        } while (ch != 'X');
 
         h6_local_proxy_server_remove_port(svr, 1025);
         h6_local_proxy_server_kill_unref(svr);

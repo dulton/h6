@@ -3,15 +3,7 @@
 #include <string.h>
 #include <trace.h>
 #include "obj.h"
-
-#define BUG_ON(x) \
-do {\
-	if (x) \
-	{\
-		fprintf(stderr, "BUG_ON(%s) at file:%s line:%d function:%s!\n", #x, __FILE__, __LINE__, __FUNCTION__); \
-		char *_______________________p = 0; *_______________________p = 0; \
-	}\
-} while (0)
+#include "h6_def.h"
 
 obj_t*
 obj_new(uint32_t size, obj_fin fin, const char *name)

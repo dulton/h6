@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include "queue.h"
 #include "h6_sched.h"
+#include "trace.h"
 
 typedef struct _h6_loop h6_loop;
 struct _h6_loop
@@ -67,16 +68,24 @@ h6_loop_init(h6_loop *loop)
 static __inline__ void
 h6_loop_add_source(h6_loop *loop, h6_ev_t *src, unsigned weight)
 {
+    TRACE_ENTER_FUNCTION;
+    
 	h6_ev_loop_attach(loop->loop, src);
 	loop->weight += weight;
+
+    TRACE_EXIT_FUNCTION;
 }
 
 
 static __inline__ void
 h6_loop_del_source(h6_loop *loop, h6_ev_t *src, unsigned weight)
 {
+    TRACE_ENTER_FUNCTION;
+    
 	h6_ev_loop_remove(loop->loop, src);
 	loop->weight -= weight;
+
+    TRACE_EXIT_FUNCTION;
 }
 
 
@@ -106,11 +115,21 @@ h6_sched_new(int32_t loops)
 	return sched;
 }
 
+static void
+h6_sched_free_weight(void *data, void *data_custom)
+{
+    h6_src_weight *sw = (h6_src_weight *)data;
+
+    free(sw);
+}
+
 void
 h6_sched_free(h6_scher_t *sched)
 {
     uint32_t idx;
     void     *result;
+
+    TRACE_ENTER_FUNCTION;
     
     if (!sched)
         return;
@@ -124,6 +143,13 @@ h6_sched_free(h6_scher_t *sched)
         h6_ev_loop_unref(sched->loops[idx].loop);
     }
     free(sched->loops);
+
+	list_foreach(
+		sched->w_list,
+		h6_sched_free_weight,
+		NULL
+	);
+    list_free(sched->w_list);    
     
     if (sched->lock)
     {
@@ -132,6 +158,8 @@ h6_sched_free(h6_scher_t *sched)
     }
     
     free(sched);
+
+    TRACE_EXIT_FUNCTION;
 }
 
 static __inline__ h6_loop *
@@ -195,15 +223,25 @@ _h6_sched_remove(h6_scher_t *sched, h6_ev_t *src)
 	h6_src_weight *sw;
 	list_t *list;
 
+    TRACE_ENTER_FUNCTION;
+    
 	list = list_find_custom(sched->w_list, src, h6_loop_find_sw);
 	if (list)
 	{   
 		sw = (h6_src_weight*)list->data;
 		h6_sched_del_weight(sched, sw);
         sched->w_list = list_delete_link(sched->w_list, list); 
+
+        TRACE_EXIT_FUNCTION;
 		return 0;
 	}
+    else
+    {
+        TRACE_WARNING("Don't find h6_ev_t object(%p) in sched->w_list,\
+            function _h6_sched_remove.\r\n", src);
+    }
 
+    TRACE_EXIT_FUNCTION;
 	return -1;
 }
 

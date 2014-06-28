@@ -58,8 +58,17 @@ h6_listener_on_ev_fin(h6_ev_t *ev)
 {
 	h6_listener_t *lt;
 
+    TRACE_ENTER_FUNCTION;
+    
 	lt = (h6_listener_t*)h6_ev_u(ev);
-	obj_unref(lt);
+    if (lt && lt->ops)
+    {
+        lt->ops->fin(lt);
+    }
+    
+	obj_unref(ev);
+
+    TRACE_EXIT_FUNCTION;
 }
 
 static int32_t
@@ -69,6 +78,8 @@ h6_listener_init(listener_t *l, void *u)
 	h6_listener_t *lt = (h6_listener_t*)l;
 	h6_listener_ops *ops = (h6_listener_ops*)u;
 
+    TRACE_ENTER_FUNCTION;
+    
 	lt->port = 0;
 	lt->host = 0;
 	lt->sock = -1;
@@ -81,43 +92,56 @@ h6_listener_init(listener_t *l, void *u)
 		err = (*ops->init)(lt);
 		if (err)
 		{
+            TRACE_EXIT_FUNCTION;
+            
 			return err;
 		}
 	}
 
 	lt->ops = ops;
+
+    TRACE_EXIT_FUNCTION;
+    
 	return 0;
 }
 
 static void
-h6_listener_finalize(h6_listener_t *lt)
+h6_listener_fin_this(h6_listener_t *lt)
 {
     h6_svr_t *svr;
 
+    TRACE_ENTER_FUNCTION;
+   
     if (lt->event)
     {
         svr = (h6_svr_t*)listener_get_owner((listener_t *)lt);        
         h6_sched_remove(svr->sched, lt->event);
         h6_ev_unref(lt->event);
     }
-    
+
     if (lt->sock >= 0)
     {
         unix_sock_close(lt->sock);
-    }      
+    }
+
+    TRACE_EXIT_FUNCTION;    
 }
 
 static void
 h6_listener_fin(listener_t *l)
 {
 	h6_listener_t *lt = (h6_listener_t*)l;
-   
+
+    TRACE_ENTER_FUNCTION;
+    
     if (lt->ops)
     {
         (*lt->ops->fin)(lt);
     }
 
-    h6_listener_finalize(lt);
+    h6_listener_fin_this(lt);
+
+    TRACE_EXIT_FUNCTION;
     
     return;
 }
@@ -132,15 +156,19 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 
 	lt = (h6_listener_t*)l;
 
+    TRACE_ENTER_FUNCTION;
+    
     if (lt->sock != -1)
     {
         TRACE_ERROR("listener has been set port already, port = %u\r\n", lt->port);
+        TRACE_EXIT_FUNCTION;
         return -1;
     }
     
 	sock = unix_sock_bind(L4_TCP, 0, htons(port), FORCE_BIND);
 	if (sock < 0)
 	{
+        TRACE_EXIT_FUNCTION;
 		return sock;
 	}
 
@@ -150,6 +178,7 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 	if (!ev)
 	{
 		unix_sock_close(sock);
+        TRACE_EXIT_FUNCTION;        
 		return -ENOMEM;
 	}
 
@@ -167,9 +196,11 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 	server = (h6_svr_t*)listener_get_owner((listener_t *)lt);
     if (server && server->sched)
     {
-        obj_ref(lt); // ???
+        obj_ref(ev);
         h6_sched_add(server->sched, lt->event, 1);        
     }
+
+    TRACE_EXIT_FUNCTION;    
 	return 0;
 }
 

@@ -5,15 +5,19 @@
 #include "trace.h"
 
 static int32_t
-h6_local_proxy_svr_init(h6_svr_t *svr, void *u)
+h6_local_proxy_svr_init_this(h6_svr_t *svr, void *u)
 {
     h6_local_proxy_svr_t *s = (h6_local_proxy_svr_t *)svr;
 
+    TRACE_ENTER_FUNCTION;
+    
     s->run = H6_FALSE;
     
     s->lsn_set = lsn_set_new();
     if (s->lsn_set == NULL)
-    {        
+    {
+        TRACE_ERROR("Failed to allocate lsn_set object!!!\r\n");
+        TRACE_EXIT_FUNCTION;
         return -1;
     }
     
@@ -23,17 +27,24 @@ h6_local_proxy_svr_init(h6_svr_t *svr, void *u)
         obj_unref(s->lsn_set);
     }
         
-    
+    TRACE_DEBUG("h6_local_proxy_svr(%p) is created.\r\n", s);
+
+    TRACE_EXIT_FUNCTION;
     return 0;
 }
 
 static void
-h6_local_proxy_svr_finalize(h6_svr_t *svr)
+h6_local_proxy_svr_fin_this(h6_svr_t *svr)
 {
     h6_local_proxy_svr_t *s = (h6_local_proxy_svr_t *)svr;
-    
+
+    TRACE_ENTER_FUNCTION;    
     assert(list_empty(&s->lsn_set->lsn_list));
     assert(list_empty(&s->cli_set->c_list));
+
+    TRACE_DEBUG("h6_local_proxy_svr(%p) is destroyed.\r\n", s);
+    
+    TRACE_EXIT_FUNCTION;
 }
 
 static void
@@ -41,6 +52,8 @@ h6_local_proxy_svr_kill(h6_svr_t *svr)
 {
     h6_local_proxy_svr_t *s = (h6_local_proxy_svr_t *)svr;
 
+    TRACE_ENTER_FUNCTION;
+    
     if (s->lsn_set)
         lsn_set_kill_unref(s->lsn_set);
 
@@ -52,6 +65,8 @@ h6_local_proxy_svr_kill(h6_svr_t *svr)
         h6_sched_free(svr->sched);
         svr->sched = NULL;
     }
+
+    TRACE_EXIT_FUNCTION;
 }
 
 static int32_t
@@ -66,8 +81,8 @@ h6_local_proxy_svr_add_client(h6_svr_t *svr, void *u)
 
 static h6_svr_ops h6_svr_ops_impl =
 {
-	.init				= h6_local_proxy_svr_init,
-	.fin				= h6_local_proxy_svr_finalize,
+	.init				= h6_local_proxy_svr_init_this,
+	.fin				= h6_local_proxy_svr_fin_this,
 	.kill				= h6_local_proxy_svr_kill,
     .add_client         = h6_local_proxy_svr_add_client
 };
@@ -91,9 +106,12 @@ h6_local_proxy_server_bind_port(h6_local_proxy_svr_t *svr, uint16_t port)
     listener_t *lsn;
     int32_t    err;
 
+    TRACE_ENTER_FUNCTION;
+    
     if (!h6_local_proxy_server_is_running(svr))
     {
         TRACE_ERROR("Server isn't running, can not add listenning port now.\r\n");
+        TRACE_EXIT_FUNCTION;
         return -EINVAL;
     }
     
@@ -104,12 +122,16 @@ h6_local_proxy_server_bind_port(h6_local_proxy_svr_t *svr, uint16_t port)
     if (err)
     {
         obj_unref((obj_t *)lsn);
+        TRACE_ERROR("Failed to bind port %u\r\n", port);
+        TRACE_EXIT_FUNCTION;
         return err;
     }
 
     assert(svr->lsn_set);
     lsn_set_add(svr->lsn_set, lsn);
+    obj_unref((obj_t *)lsn);
 
+    TRACE_EXIT_FUNCTION;
     return 0;     
 }
 
@@ -144,7 +166,6 @@ h6_local_proxy_server_remove_port(h6_local_proxy_svr_t *svr, uint16_t port)
     if (lsn)
     {
         lsn_set_del(svr->lsn_set, lsn);        
-        obj_unref(lsn);
     }
 
     TRACE_EXIT_FUNCTION;
@@ -155,7 +176,7 @@ h6_local_proxy_server_run(h6_local_proxy_svr_t *svr, int32_t loops)
 {
     h6_scher_t *sched;
     int32_t  err = -EINVAL;
-    
+
     if (svr->run == H6_TRUE)
         return -EINVAL;
         
@@ -177,7 +198,11 @@ h6_local_proxy_server_run(h6_local_proxy_svr_t *svr, int32_t loops)
 void
 h6_local_proxy_server_kill_unref(h6_local_proxy_svr_t *svr)
 {
+    TRACE_ENTER_FUNCTION;
+    
     h6_server_kill_unref((h6_svr_t *)svr);
+
+    TRACE_EXIT_FUNCTION;
 }
 
 
