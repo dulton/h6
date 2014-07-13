@@ -354,6 +354,7 @@ h6_ev_loop_ops_add(h6_ev_loop *loop, h6_ev_loop_ops *ops)
 	event = ops->event;
     loop->ev_list = list_insert_head(loop->ev_list, event);
     h6_ev_ref(event);   // ref_count should be descreased when it is removed from list
+    TRACE_DEBUG("Insert into loop->ev_list, increase ref_count to %d\r\n", event->ref_count);
     
 	h6_ev_loop_sync_add(loop, event);
 
@@ -625,6 +626,9 @@ h6_ev_new(size_t size, int fd, int events)
     }
     
     atomic_set(&ev->ref_count, 1);
+    TRACE_DEBUG("h6_ev_new: event=%p, ev->ref_count = %d\r\n"),
+        event, atomic_get(&event->ref_count));        
+    
 	ev->ev_size = size;
 
 	events &= ( EV_READ | EV_WRITE );

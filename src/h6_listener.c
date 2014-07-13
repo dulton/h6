@@ -195,10 +195,10 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 
 	server = (h6_svr_t*)listener_get_owner((listener_t *)lt);
 	if (server && server->sched)
-    	{
-        	h6_ev_ref(ev);
-        	h6_sched_add(server->sched, lt->event, 1);        
-    	}
+	{
+    	h6_ev_ref(ev);
+    	h6_sched_add(server->sched, lt->event, 1);        
+	}
 
 	TRACE_EXIT_FUNCTION;    
 	return 0;
@@ -245,7 +245,7 @@ static listener_ops l_ops =
 	.init		= h6_listener_init,
 	.fin		= h6_listener_fin,
 	.set_port	= h6_listener_set_port,
-    	.kill       = h6_listener_kill,	
+	.kill       = h6_listener_kill,	
 	.new_cli	= h6_listener_generate_client
 };
 
