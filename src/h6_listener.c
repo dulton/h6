@@ -58,17 +58,17 @@ h6_listener_on_ev_fin(h6_ev_t *ev)
 {
 	h6_listener_t *lt;
 
-    TRACE_ENTER_FUNCTION;
+	TRACE_ENTER_FUNCTION;
     
 	lt = (h6_listener_t*)h6_ev_u(ev);
-    if (lt && lt->ops)
-    {
-        lt->ops->fin(lt);
-    }
+	if (lt && lt->ops)
+    	{
+        	lt->ops->fin(lt);
+    	}
     
-	obj_unref(ev);
+	h6_ev_unref(ev);
 
-    TRACE_EXIT_FUNCTION;
+	TRACE_EXIT_FUNCTION;
 }
 
 static int32_t
@@ -194,13 +194,13 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 	lt->user_data = NULL;
 
 	server = (h6_svr_t*)listener_get_owner((listener_t *)lt);
-    if (server && server->sched)
-    {
-        obj_ref(ev);
-        h6_sched_add(server->sched, lt->event, 1);        
-    }
+	if (server && server->sched)
+    	{
+        	h6_ev_ref(ev);
+        	h6_sched_add(server->sched, lt->event, 1);        
+    	}
 
-    TRACE_EXIT_FUNCTION;    
+	TRACE_EXIT_FUNCTION;    
 	return 0;
 }
 
@@ -245,7 +245,7 @@ static listener_ops l_ops =
 	.init		= h6_listener_init,
 	.fin		= h6_listener_fin,
 	.set_port	= h6_listener_set_port,
-    .kill       = h6_listener_kill,	
+    	.kill       = h6_listener_kill,	
 	.new_cli	= h6_listener_generate_client
 };
 
