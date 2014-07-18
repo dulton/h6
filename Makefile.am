@@ -1,6 +1,6 @@
 SUBDIRS = src/
 CURRENTPATH=$(PWD)
-INCLUDES=-I$(CURRENTPATH)/include
+INCLUDES=-I/usr/loca/include -I$(CURRENTPATH)/include
 
 export INCLUDES
 

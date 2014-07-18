@@ -62,12 +62,10 @@ h6_listener_on_ev_fin(h6_ev_t *ev)
     
 	lt = (h6_listener_t*)h6_ev_u(ev);
 	if (lt && lt->ops)
-    	{
-        	lt->ops->fin(lt);
-    	}
+	{
+    	lt->ops->fin(lt);
+	}
     
-	h6_ev_unref(ev);
-
 	TRACE_EXIT_FUNCTION;
 }
 
@@ -116,7 +114,7 @@ h6_listener_fin_this(h6_listener_t *lt)
     {
         svr = (h6_svr_t*)listener_get_owner((listener_t *)lt);        
         h6_sched_remove(svr->sched, lt->event);
-        h6_ev_unref(lt->event);
+        h6_ev_unref(lt->event); // destroy ev
     }
 
     if (lt->sock >= 0)
@@ -160,7 +158,8 @@ h6_listener_set_port(listener_t *l, uint16_t port)
     
     if (lt->sock != -1)
     {
-        TRACE_ERROR("listener has been set port already, port = %u\r\n", lt->port);
+        TRACE_ERROR("Listener(%p) has been set port already, port = %u\r\n",
+            lt, lt->port);
         TRACE_EXIT_FUNCTION;
         return -1;
     }
@@ -168,6 +167,8 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 	sock = unix_sock_bind(L4_TCP, 0, htons(port), FORCE_BIND);
 	if (sock < 0)
 	{
+        TRACE_ERROR("Listener(%p) failed to bind port(%u).\r\n", lt, port);
+        
         TRACE_EXIT_FUNCTION;
 		return sock;
 	}
@@ -177,10 +178,23 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 	ev = h6_ev_new(sizeof(*ev), sock, EV_READ);
 	if (!ev)
 	{
+        TRACE_ERROR("Listener(%p) failed to allocate ev object.\r\n", lt);       
 		unix_sock_close(sock);
+        
         TRACE_EXIT_FUNCTION;        
 		return -ENOMEM;
 	}
+
+	server = (h6_svr_t*)listener_get_owner((listener_t *)lt);
+    if (server == NULL || server->sched == NULL)
+    {
+        TRACE_ERROR("Listener(%p) haven't owner/server or server's scheduler\
+            didn't created.\r\n", lt);
+        unix_sock_close(sock);
+
+        TRACE_EXIT_FUNCTION;
+        return -1;
+    }
 
 	h6_ev_set_callback(ev, h6_listener_on_event, l, h6_listener_on_ev_fin);
 	h6_ev_set_timeout((h6_ev_t*)ev, 3*1000);
@@ -193,17 +207,14 @@ h6_listener_set_port(listener_t *l, uint16_t port)
 	lt->event = ev;
 	lt->user_data = NULL;
 
-	server = (h6_svr_t*)listener_get_owner((listener_t *)lt);
-	if (server && server->sched)
-	{
-    	h6_ev_ref(ev);
-    	h6_sched_add(server->sched, lt->event, 1);        
-	}
+   	h6_sched_add(server->sched, lt->event, 1);        
 
-	TRACE_EXIT_FUNCTION;    
+	TRACE_EXIT_FUNCTION;
+    
 	return 0;
 }
 
+/*
 static void
 h6_listener_kill(listener_t *l)
 {
@@ -220,11 +231,10 @@ h6_listener_kill(listener_t *l)
     }
 
     obj_unref(lt);
-//    if (lt->sock)
-//        close(lt->sock);
 
     TRACE_EXIT_FUNCTION;
 }
+*/
 
 static client_t*
 h6_listener_generate_client(listener_t *l, void *parm)
@@ -245,7 +255,7 @@ static listener_ops l_ops =
 	.init		= h6_listener_init,
 	.fin		= h6_listener_fin,
 	.set_port	= h6_listener_set_port,
-	.kill       = h6_listener_kill,	
+//	.kill       = h6_listener_kill,	
 	.new_cli	= h6_listener_generate_client
 };
 

@@ -22,5 +22,5 @@ h6_SOURCES = obj.c \
 h6_CFLAGS=-g -fPIC -Wall 
 h6_CXXFLAGS=-g -fPIC -Wall -D_GNU_SOURCE
 
-h6_LDFLAGS = -static
-h6_LDADD = -lpthread -lev
+#h6_LDFLAGS = -static
+h6_LDADD = -lpthread -lev -L/usr/local/lib

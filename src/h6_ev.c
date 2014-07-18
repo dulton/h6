@@ -626,8 +626,8 @@ h6_ev_new(size_t size, int fd, int events)
     }
     
     atomic_set(&ev->ref_count, 1);
-    TRACE_DEBUG("h6_ev_new: event=%p, ev->ref_count = %d\r\n"),
-        event, atomic_get(&event->ref_count));        
+    TRACE_DEBUG("h6_ev_new: ev=%p, ev->ref_count = %d\r\n",
+        ev, atomic_get(&ev->ref_count));
     
 	ev->ev_size = size;
 
@@ -658,8 +658,10 @@ h6_ev_t *h6_ev_ref(h6_ev_t *event)
 }
 
 
-void h6_ev_unref(h6_ev_t *event)
+void h6_ev_unref(h6_ev_t *event)    
 {
+    TRACE_ENTER_FUNCTION;
+    
 	REF_DEBUG_TEST(event);
 	if (atomic_dec_and_test_zero(&event->ref_count))
 	{
@@ -676,6 +678,8 @@ void h6_ev_unref(h6_ev_t *event)
         TRACE_DEBUG("h6_ev_unref: event=%p, event->ref_count = %d\r\n",
             event, atomic_get(&event->ref_count));
     }
+
+    TRACE_EXIT_FUNCTION;
 }
 
 
