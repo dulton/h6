@@ -354,7 +354,8 @@ h6_ev_loop_ops_add(h6_ev_loop *loop, h6_ev_loop_ops *ops)
 	event = ops->event;
     loop->ev_list = list_insert_head(loop->ev_list, event);
     h6_ev_ref(event);   // ref_count should be descreased when it is removed from list
-    TRACE_DEBUG("Insert into loop->ev_list, increase ref_count to %d\r\n", event->ref_count);
+    TRACE_DEBUG("h6_ev_loop_ops_add: insert into loop->ev_list, increase ref_count to %d\r\n", 
+        atomic_get(&(event->ref_count)));
     
 	h6_ev_loop_sync_add(loop, event);
 
@@ -381,7 +382,9 @@ h6_ev_loop_add(h6_ev_loop *loop, h6_ev_t *event)
         ops->event = event;
         ops->func = h6_ev_loop_ops_add;
         h6_ev_ref(event); // ref_count will be decreased in function h6_ev_loop_exec_operation
-        
+        TRACE_DEBUG("h6_ev_loop_add: Increase evevnt's ref_count to %d\r\n",
+            atomic_get(&(event->ref_count)));
+            
         queue_push_tail(loop->operations, ops);
         h6_ev_loop_wakeup(loop);
         
@@ -441,6 +444,8 @@ h6_ev_loop_ops_remove(h6_ev_loop *loop, h6_ev_loop_ops *ops)
         list_free(list);
         h6_ev_loop_sync_remove(loop, ops->event);
         h6_ev_unref(ops->event);    // corresponding with h6_ev_loop_ops_add
+	    TRACE_DEBUG("h6_ev_loop_ops_remove: remove from loop->ev_list, decrease ref_count to %d.\r\n",
+            atomic_get(&(ops->event->ref_count)));
     }
 
     TRACE_EXIT_FUNCTION;
@@ -545,7 +550,11 @@ h6_ev_loop_exec_operations(h6_ev_loop *loop)
 		pthread_mutex_unlock(loop->lock);
 
 		if (ops->event)
+        {      
 			h6_ev_unref(ops->event);
+            TRACE_DEBUG("h6_ev_loop_exec_operations: Decrease event ref_count to %d\r\n",
+                atomic_get(&(ops->event->ref_count)));
+        }
 
 		free(ops);
 		pthread_mutex_lock(loop->lock);
